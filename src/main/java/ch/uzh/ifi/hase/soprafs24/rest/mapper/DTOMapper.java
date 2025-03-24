@@ -1,8 +1,10 @@
 package ch.uzh.ifi.hase.soprafs24.rest.mapper;
 
 import ch.uzh.ifi.hase.soprafs24.entity.User;
+import ch.uzh.ifi.hase.soprafs24.entity.Game;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPostDTO;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPutDTO;
 import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
@@ -36,9 +38,25 @@ public interface DTOMapper {
     @Mapping(source = "creationDate", target = "creationDate")
     @Mapping(source = "birthday", target = "birthday")
     @Mapping(source = "token", target = "token")
+    User convertUserPostGETtoEntity(UserGetDTO UserGetDTO);
+
+    @Mapping(source = "id", target = "id")
+    @Mapping(source = "name", target = "name")
+    @Mapping(source = "username", target = "username")
+    @Mapping(source = "status", target = "status")
+    @Mapping(source = "creationDate", target = "creationDate")
+    @Mapping(source = "birthday", target = "birthday")
+    @Mapping(source = "token", target = "token")
     UserGetDTO convertEntityToUserGetDTO(User user);
 
     @Mapping(source = "username", target = "username")
     @Mapping(source = "birthday", target = "birthday")
     void updateUserFromDTO(UserPutDTO userPutDTO, @MappingTarget User user);
+
+    @Mapping(source = "numberUsers", target = "numberUsers")
+    @Mapping(source = "sizeBoard", target = "sizeBoard")
+    @Mapping(source = "timeLimit", target = "timeLimit")
+    //@Mapping(source = "creator", target = "creator")
+    GamePostDTO convertEntityToGamePostDTO(Game game);
+    
 }

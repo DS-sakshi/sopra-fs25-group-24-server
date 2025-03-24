@@ -5,11 +5,9 @@ import ch.uzh.ifi.hase.soprafs24.entity.Game;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-@Repository("userRepository")
-public interface UserRepository extends JpaRepository<User, Long> {
-  User findByName(String name);
+@Repository("gameRepository")
+public interface GameRepository extends JpaRepository<Game, Long> {
+  Game findById(long id);
 
-  User findByUsername(String username);
 }
-
 
