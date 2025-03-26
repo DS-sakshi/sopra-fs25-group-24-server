@@ -3,6 +3,7 @@ package ch.uzh.ifi.hase.soprafs24.rest.mapper;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.entity.Game;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.GameGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPutDTO;
@@ -53,6 +54,7 @@ public interface DTOMapper {
     @Mapping(source = "birthday", target = "birthday")
     void updateUserFromDTO(UserPutDTO userPutDTO, @MappingTarget User user);
 
+    @Mapping(source = "id", target = "id")
     @Mapping(source = "numberUsers", target = "numberUsers")
     @Mapping(source = "sizeBoard", target = "sizeBoard")
     @Mapping(source = "timeLimit", target = "timeLimit")
@@ -60,5 +62,14 @@ public interface DTOMapper {
     @Mapping(source = "currentUsers", target = "currentUsers")
     @Mapping(source = "gameStatus", target = "gameStatus")
     GamePostDTO convertEntityToGamePostDTO(Game game);
+
+    @Mapping(source = "id", target = "id")
+    @Mapping(source = "numberUsers", target = "numberUsers")
+    @Mapping(source = "sizeBoard", target = "sizeBoard")
+    @Mapping(source = "timeLimit", target = "timeLimit")
+    @Mapping(source = "creator", target = "creator")
+    @Mapping(source = "currentUsers", target = "currentUsers")
+    @Mapping(source = "gameStatus", target = "gameStatus")
+    GameGetDTO convertEntityToGameGetDTO(Game game);
     
 }

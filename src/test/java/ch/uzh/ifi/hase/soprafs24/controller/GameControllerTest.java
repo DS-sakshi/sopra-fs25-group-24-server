@@ -54,8 +54,45 @@ public class GameControllerTest {
     @MockBean
     private GameService gameService;
 
+    // Test 1: getAllGames (success case - 200)
+    @Test
+    public void getAllGames_returnsGameList() throws Exception {
+        // given
+        User user = new User();
+        user.setId(1L);
+        user.setName("Test User");
+        user.setUsername("testUsername");
+        user.setStatus(UserStatus.ONLINE);
 
-    // Test 1: createGame (success case - 201)
+        Game game = new Game();
+        game.setId(1L);
+        game.setNumberUsers(2);
+        game.setSizeBoard(9);
+        game.setCreator(user);
+        game.setGameStatus(GameStatus.WAITING_FOR_USER);
+        game.setCurrentUsers(Set.of(user));
+
+        List<Game> allGames = Collections.singletonList(game);
+
+        given(gameService.getGames()).willReturn(allGames);
+
+        // when/then
+        mockMvc.perform(get("/game-lobby"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(1)))
+            .andExpect(jsonPath("$[0].id", is(1)))
+            .andExpect(jsonPath("$[0].numberUsers", is(2)))
+            .andExpect(jsonPath("$[0].sizeBoard", is(9)))
+            .andExpect(jsonPath("$[0].creator.id", is(1)))
+            .andExpect(jsonPath("$[0].creator.username", is("testUsername")))
+            .andExpect(jsonPath("$[0].gameStatus", is("WAITING_FOR_USER")))
+            .andExpect(jsonPath("$[0].currentUsers[0].name", is(user.getName())))
+            .andExpect(jsonPath("$[0].currentUsers[0].username", is(user.getUsername())))
+            .andExpect(jsonPath("$[0].currentUsers[0].status", is("ONLINE")));
+    }
+
+
+    // Test 2: createGame (success case - 201)
     @Test
     public void createGame_validInput_userCreated() throws Exception {
         // given
@@ -68,6 +105,7 @@ public class GameControllerTest {
         user.setCreationDate(new Date());
 
         Game newGame = new Game();
+        newGame.setId(1L); 
         newGame.setNumberUsers(2); 
         newGame.setSizeBoard(9); 
         newGame.setCreator(user);
@@ -98,7 +136,7 @@ public class GameControllerTest {
             .andExpect(jsonPath("$.currentUsers[0].status", is("ONLINE")));
     }
 
-    // Test 2: create Game (fail case - 409)
+    // Test 3: create Game (fail case - 409)
     @Test
     public void createGame_UserNotFound() throws Exception {
         // given
@@ -121,6 +159,55 @@ public class GameControllerTest {
         // Expect 404 Not Found status
         mockMvc.perform(postRequest)
                 .andExpect(status().isConflict());
+    }
+
+    // Test 4: join Game (valid case - 201)
+    @Test
+    public void joinGame_validInput_noContent() throws Exception {
+        // given
+        Long gameId = 1L;
+        User user = new User();
+        user.setId(2L);
+        user.setName("Joining User");
+        user.setUsername("joiningUser");
+        user.setStatus(UserStatus.ONLINE);
+
+        UserGetDTO userGetDTO = DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
+
+        // when/then
+        MockHttpServletRequestBuilder putRequest = put("/game-lobby/{gameId}/join", gameId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(userGetDTO));
+
+        mockMvc.perform(putRequest)
+            .andExpect(status().isNoContent());
+
+        Mockito.verify(gameService).joinGame(Mockito.any(User.class), Mockito.eq(gameId));
+    }
+
+    // Test 5: joinGame (fail case - 404 Game not found)
+    @Test
+    public void joinGame_gameNotFound() throws Exception {
+        // given
+        Long gameId = 999L;
+        User user = new User();
+        user.setId(2L);
+        user.setName("Joining User");
+        user.setUsername("joiningUser");
+        user.setStatus(UserStatus.ONLINE);
+
+        UserGetDTO userGetDTO = DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
+
+        doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Game not found"))
+                .when(gameService).joinGame(Mockito.any(User.class), Mockito.eq(gameId));
+
+        // when/then
+        MockHttpServletRequestBuilder putRequest = put("/game-lobby/{gameId}/join", gameId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(userGetDTO));
+
+        mockMvc.perform(putRequest)
+            .andExpect(status().isNotFound());
     }
     
 
