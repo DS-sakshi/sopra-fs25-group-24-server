@@ -1,13 +1,16 @@
 package ch.uzh.ifi.hase.soprafs24.rest.dto;
-
 import ch.uzh.ifi.hase.soprafs24.entity.User;
+import java.util.Set;
+import ch.uzh.ifi.hase.soprafs24.constant.GameStatus;
 
 public class GamePostDTO {
 
     private int numberUsers;
     private int sizeBoard;
     private int timeLimit;
-    //private User creator;
+    private GameStatus gameStatus;
+    private User creator;
+    private Set<User> currentUsers;
 
     public int getNumberUsers() {
         return numberUsers;
@@ -33,11 +36,27 @@ public class GamePostDTO {
         this.timeLimit = timeLimit;
     }
 
-    // public User getCreator() {
-    //     return creator;
-    // }
+    public User getCreator() {
+        return creator;
+    }
 
-    // public void setCreator(User creator) {
-    //     this.creator = creator;
-    // }
+    public void setCreator(User creator) {
+        this.creator = creator;
+    }
+
+    public Set<User> getCurrentUsers() {
+        return currentUsers;
+    }
+
+    public void setCurrentUsers(Set<User> currentUsers) {
+        this.currentUsers = currentUsers;
+    }
+
+    public GameStatus getGameStatus() {
+        return gameStatus;
+    }
+
+    public void setGameStatus(GameStatus gameStatus) {
+        this.gameStatus = gameStatus;
+    }
 }

@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Date;
+import java.util.Set;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -73,7 +74,9 @@ public class GameService {
         newGame.setSizeBoard(9); 
         newGame.setCreator(userById);
         newGame.setCurrentTurn(userById);
-        newGame.setGameStatus(GameStatus.WAITING_FOR_USER); 
+        newGame.setGameStatus(GameStatus.WAITING_FOR_USER);
+        Set<User> userList = Set.of(userById);
+        newGame.setCurrentUsers(userList); 
 
         newGame = gameRepository.save(newGame);
         userRepository.flush();

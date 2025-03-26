@@ -56,7 +56,9 @@ public interface DTOMapper {
     @Mapping(source = "numberUsers", target = "numberUsers")
     @Mapping(source = "sizeBoard", target = "sizeBoard")
     @Mapping(source = "timeLimit", target = "timeLimit")
-    //@Mapping(source = "creator", target = "creator")
+    @Mapping(source = "creator", target = "creator")
+    @Mapping(source = "currentUsers", target = "currentUsers")
+    @Mapping(source = "gameStatus", target = "gameStatus")
     GamePostDTO convertEntityToGamePostDTO(Game game);
     
 }

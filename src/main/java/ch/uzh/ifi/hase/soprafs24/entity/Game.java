@@ -4,6 +4,9 @@ import ch.uzh.ifi.hase.soprafs24.constant.GameStatus;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
+
 
 @Entity
 @Table(name = "GAME")
@@ -24,12 +27,17 @@ public class Game implements Serializable {
     @Column(nullable = true)
     private int timeLimit;
 
-    @ManyToOne(fetch = FetchType.EAGER) // Define the relationship
-    @JoinColumn(name = "creator_id", nullable = false) // Specify the foreign key column
+    @ManyToOne(fetch = FetchType.EAGER) 
+    @JoinColumn(name = "creator_id", nullable = false) 
     private User creator;
 
-    // @Column(nullable = false)
-    // private List<User> currentUsers;
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "game_users",
+        joinColumns = @JoinColumn(name = "game_id"),
+        inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private Set<User> currentUsers = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "current_turn_id", nullable = false)
@@ -78,13 +86,23 @@ public class Game implements Serializable {
         this.creator = creator;
     }
 
-    // public List<User> getCurrentUsers() {
-    //     return currentUsers;
-    // }
+    public Set<User> getCurrentUsers() {
+        return currentUsers;
+    }
 
-    // public void setCurrentUsers(List<User> currentUsers) {
-    //     this.currentUsers = currentUsers;
-    // }
+    public void setCurrentUsers(Set<User> currentUsers) {
+        this.currentUsers = currentUsers;
+    }
+
+    public void addUser(User user) {
+        this.currentUsers.add(user);
+        user.getGames().add(this);
+    }
+
+    public void removeUser(User user) {
+        this.currentUsers.remove(user);
+        user.getGames().remove(this);
+    }
 
     public User getCurrentTurn() {
         return currentTurn;
