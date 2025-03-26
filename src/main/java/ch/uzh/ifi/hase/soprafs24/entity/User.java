@@ -1,10 +1,15 @@
 package ch.uzh.ifi.hase.soprafs24.entity;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Set;
+import java.util.HashSet;
+
 
 /**
  * Internal User Representation
@@ -18,6 +23,7 @@ import java.util.Date;
  */
 @Entity
 @Table(name = "USER")
+@JsonIgnoreProperties("games")
 public class User implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -46,6 +52,9 @@ public class User implements Serializable {
 
     @Column
     private Date birthday;
+
+    @ManyToMany(mappedBy = "currentUsers", fetch = FetchType.LAZY)
+    private Set<Game> games = new HashSet<>();
 
     public Long getId() {
         return id;
@@ -109,5 +118,13 @@ public class User implements Serializable {
 
     public void setBirthday(Date birthday) {
         this.birthday = birthday;
+    }
+
+    public Set<Game> getGames() {
+        return games;
+    }
+
+    public void setGames(Set<Game> games) {
+        this.games = games;
     }
 }

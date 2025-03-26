@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Date;
+import java.util.Set;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -57,6 +58,9 @@ public class GameService {
      * @see User
      */
 
+    public List<Game> getGames() {
+        return this.gameRepository.findAll();
+    }
      
     public Game createGame(User user) {
         User userById = userRepository.findById(user.getId()).orElse(null);
@@ -73,17 +77,52 @@ public class GameService {
         newGame.setSizeBoard(9); 
         newGame.setCreator(userById);
         newGame.setCurrentTurn(userById);
-        newGame.setGameStatus(GameStatus.WAITING_FOR_USER); 
+        newGame.setGameStatus(GameStatus.WAITING_FOR_USER);
+        Set<User> userList = Set.of(userById);
+        newGame.setCurrentUsers(userList); 
 
         newGame = gameRepository.save(newGame);
-        userRepository.flush();
+        gameRepository.flush();
 
-        log.debug("Created Information for User: {}", newGame);
+        log.debug("Created Information for Game: {}", newGame);
         return newGame;
     }
 
 
+    public void joinGame(User user, Long gameId) {
+        User userById = userRepository.findById(user.getId()).orElse(null);
 
+        String userErrorMessage = "The User does not exist or is not logged in currenlty!";
+        if (userById == null || userById.getStatus() == UserStatus.OFFLINE) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, userErrorMessage);
+        }
+
+        Game gameById = gameRepository.findById(gameId).orElse(null);
+
+        String gameErrorMessage = "The Game does not exist!";
+        if (gameById == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, gameErrorMessage);
+        }
+
+        String gameFullErrorMessage = "The Game is already full or running!";
+        if (gameById.getGameStatus() == GameStatus.RUNNING || gameById.getCurrentUsers().size() == 2) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, gameFullErrorMessage);
+        }
+
+        String userGameErrorMessage = "The user is already part of the game!";
+        if (gameById.getCurrentUsers().contains(userById)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, userGameErrorMessage);
+        }
+
+        gameById.addUser(userById);
+        gameRepository.flush();
+
+        if (gameById.getCurrentUsers().size() == 2) {
+            gameById.setGameStatus(GameStatus.RUNNING);
+        }
+
+        log.debug("Updadet Information for Game: {}", gameById);
+    }
 
 
     

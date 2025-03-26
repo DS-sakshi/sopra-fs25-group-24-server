@@ -3,7 +3,7 @@ import ch.uzh.ifi.hase.soprafs24.entity.User;
 import java.util.Set;
 import ch.uzh.ifi.hase.soprafs24.constant.GameStatus;
 
-public class GamePostDTO {
+public class GameGetDTO {
 
     private long id;
     private int numberUsers;
