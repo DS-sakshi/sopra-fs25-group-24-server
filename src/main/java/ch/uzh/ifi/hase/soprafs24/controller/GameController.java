@@ -48,6 +48,16 @@ public class GameController {
         return gameGetDTOs;
     }
 
+    @GetMapping("/game-lobby/{gameId}")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public GameGetDTO getGame(@PathVariable Long gameId) {
+        // fetch all users in the internal representation
+        Game game = gameService.getGame(gameId);
+
+        return DTOMapper.INSTANCE.convertEntityToGameGetDTO(game);
+    }
+
     @PostMapping("/game-lobby")
     @ResponseStatus(HttpStatus.CREATED)
     @ResponseBody
