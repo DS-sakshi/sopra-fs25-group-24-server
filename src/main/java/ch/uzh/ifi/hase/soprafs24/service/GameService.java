@@ -61,6 +61,20 @@ public class GameService {
     public List<Game> getGames() {
         return this.gameRepository.findAll();
     }
+
+    public Game getGame(Long gameId) {
+
+        Game gameById = gameRepository.findById(gameId).orElse(null);
+
+        String gameErrorMessage = "The Game does not exist!";
+        if (gameById == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, gameErrorMessage);
+        }
+
+        log.debug("Retrieved Game: {}", gameById);
+        return gameById;
+
+    }
      
     public Game createGame(User user) {
         User userById = userRepository.findById(user.getId()).orElse(null);
