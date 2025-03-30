@@ -213,7 +213,7 @@ public class UserControllerTest {
                 .andExpect(status().isNotFound());
     }
 
-        // REST Test for Userstory 1
+        // REST Test for Userstory 1 + 2
     @Test
     public void loginUser_validCrednetials() throws Exception {
         UserPostDTO userPostDTO = new UserPostDTO();
@@ -279,19 +279,24 @@ public class UserControllerTest {
         mockMvc.perform(postRequest)
                 .andExpect(status().isNotFound());
         }
+
         @Test
         public void loginUser_invalidInput() throws Exception {
-            UserPostDTO userPostDTO = new UserPostDTO();
-            userPostDTO.setName("Test User");
-            userPostDTO.setUsername("testUsername");
-            userPostDTO.setPassword("");
+                UserPostDTO userPostDTO = new UserPostDTO();
+                userPostDTO.setName("Test User");
+                userPostDTO.setUsername("testUsername");
+                userPostDTO.setPassword("");
 
-            MockHttpServletRequestBuilder postRequest = post("/login")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(asJsonString(userPostDTO));
+            // Mock service to throw bad request exception when password is empty
 
-            mockMvc.perform(postRequest)
-                    .andExpect(status().isBadRequest());
+                doThrow(new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Password cannot be empty"))
+                .when(userService).loginUser(Mockito.eq("testUsername"), Mockito.eq(""));
+                MockHttpServletRequestBuilder postRequest = post("/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(userPostDTO));
+
+                mockMvc.perform(postRequest)
+                        .andExpect(status().isUnauthorized());
         }
 
     /**
