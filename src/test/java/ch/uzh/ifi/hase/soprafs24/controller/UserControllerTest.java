@@ -262,6 +262,38 @@ public class UserControllerTest {
                 .andExpect(status().isUnauthorized());
 }
 
+    @Test
+    public void loginUser_userNotFound() throws Exception {
+        UserPostDTO userPostDTO = new UserPostDTO();
+        userPostDTO.setName("Test User");
+        userPostDTO.setUsername("nonExistentUser");
+        userPostDTO.setPassword("password");
+
+        doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"))
+                .when(userService).loginUser(Mockito.eq("nonExistentUser"), Mockito.eq("password"));
+
+        MockHttpServletRequestBuilder postRequest = post("/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(userPostDTO));
+
+        mockMvc.perform(postRequest)
+                .andExpect(status().isNotFound());
+        }
+        @Test
+        public void loginUser_invalidInput() throws Exception {
+            UserPostDTO userPostDTO = new UserPostDTO();
+            userPostDTO.setName("Test User");
+            userPostDTO.setUsername("testUsername");
+            userPostDTO.setPassword("");
+
+            MockHttpServletRequestBuilder postRequest = post("/login")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(asJsonString(userPostDTO));
+
+            mockMvc.perform(postRequest)
+                    .andExpect(status().isBadRequest());
+        }
+
     /**
      * Helper Method to convert userPostDTO into a JSON string such that the input
      * can be processed
