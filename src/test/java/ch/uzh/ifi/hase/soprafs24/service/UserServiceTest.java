@@ -5,11 +5,14 @@ import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Assertions;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
+
 
 import java.util.Date;
 
@@ -36,6 +39,16 @@ public class UserServiceTest {
     testUser.setUsername("testUsername");
     testUser.setPassword("password");
     testUser.setCreationDate(new Date());
+    testUser.setStatus(UserStatus.OFFLINE);
+
+    // testUser is sufficient for now, maybe this for later
+    // exitstingUser = new User();
+    // exitstingUser.setId(2L);
+    // exitstingUser.setName("existingName");
+    // exitstingUser.setUsername("existingUsername");
+    // exitstingUser.setPassword("existingPassword");
+    // exitstingUser.setCreationDate(new Date());
+    // exitstingUser.setStatus(UserStatus.OFFLINE);
 
     // when -> any object is being save in the userRepository -> return the dummy
     // testUser
@@ -112,4 +125,48 @@ public class UserServiceTest {
     assertThrows(ResponseStatusException.class, () -> userService.createUser(testUser));
   }
 
+  @Test
+  public void loginUser_validInputs_success() {
+    // given
+    Mockito.when(userRepository.findByUsername(Mockito.any())).thenReturn(testUser);
+
+    // when
+    User loggedInUser = userService.loginUser(testUser.getUsername(), testUser.getPassword());
+
+    // then
+
+    assertEquals(testUser.getId(), loggedInUser.getId());
+    assertEquals(testUser.getName(), loggedInUser.getName());
+    assertEquals(testUser.getUsername(), loggedInUser.getUsername());
+    // assertNotNull(loggedInUser.getToken()); as for now the creation does not influence the token, comment in again if later changed for saver authentication
+    assertEquals(UserStatus.ONLINE, loggedInUser.getStatus());
+
+    // verify that the userRepository was called once with any username
+    Mockito.verify(userRepository, Mockito.times(1)).findByUsername(Mockito.any());
+    // Verify save was called to update status
+    Mockito.verify(userRepository, Mockito.times(1)).save(Mockito.any());
+  }
+
+  @Test
+  public void loginUser_invalidUsername_throwsException() {
+    // given
+    Mockito.when(userRepository.findByUsername(Mockito.any())).thenReturn(null);
+
+ 
+    ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> userService.loginUser("NonExistentUsername", "password"));
+    assertEquals(HttpStatus.NOT_FOUND, exception.getStatus());
+    assertTrue(exception.getReason().contains("Username not found"));
+  }
+
+  @Test
+  public void loginUser_invalidPassword_throwsException() {
+    // given
+    Mockito.when(userRepository.findByUsername(Mockito.any())).thenReturn(testUser);
+
+    // when
+    ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> userService.loginUser(testUser.getUsername(), "wrongPassword"));
+  
+    assertEquals(HttpStatus.UNAUTHORIZED, exception.getStatus());
+    assertTrue(exception.getReason().contains("Invalid password"));
+  }
 }
