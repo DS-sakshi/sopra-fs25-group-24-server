@@ -53,6 +53,15 @@ public class User implements Serializable {
     @Column
     private Date birthday;
 
+    @Column(nullable = false)
+    private int gamesPlayed = 0;
+
+    @Column(nullable = false)
+    private int gamesWon= 0;
+
+    @Column
+    private String profilePicture;
+
     @ManyToMany(mappedBy = "currentUsers", fetch = FetchType.LAZY)
     private Set<Game> games = new HashSet<>();
 
@@ -126,5 +135,24 @@ public class User implements Serializable {
 
     public void setGames(Set<Game> games) {
         this.games = games;
+    }
+
+    public int getGamesPlayed() {
+        return gamesPlayed;
+    }
+    public void setGamesPlayed(int gamesPlayed) {
+        this.gamesPlayed = gamesPlayed;
+    }
+    public int getGamesWon() {
+        return gamesWon;
+    }
+    public void setGamesWon(int gamesWon) {
+        this.gamesWon = gamesWon;
+    }
+    public String getProfilePicture() {
+        return profilePicture;
+    }
+    public void setProfilePicture(String profilePicture) {
+        this.profilePicture = profilePicture;
     }
 }

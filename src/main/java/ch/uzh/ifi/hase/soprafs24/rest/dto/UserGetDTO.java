@@ -12,11 +12,13 @@ public class UserGetDTO {
     private Date creationDate;
     private Date birthday;
     private String token;
+    private String profilePicture;
+    private int gamesPlayed;
+    private int gamesWon;
 
     public Long getId() {
         return id;
     }
-
     public void setId(Long id) {
         this.id = id;
     }
@@ -24,7 +26,6 @@ public class UserGetDTO {
     public String getName() {
         return name;
     }
-
     public void setName(String name) {
         this.name = name;
     }
@@ -32,7 +33,6 @@ public class UserGetDTO {
     public String getUsername() {
         return username;
     }
-
     public void setUsername(String username) {
         this.username = username;
     }
@@ -40,7 +40,6 @@ public class UserGetDTO {
     public UserStatus getStatus() {
         return status;
     }
-
     public void setStatus(UserStatus status) {
         this.status = status;
     }
@@ -48,7 +47,6 @@ public class UserGetDTO {
     public Date getCreationDate() {
         return creationDate;
     }
-
     public void setCreationDate(Date creationDate) {
         this.creationDate = creationDate;
     }
@@ -56,7 +54,6 @@ public class UserGetDTO {
     public Date getBirthday() {
         return birthday;
     }
-
     public void setBirthday(Date birthday) {
         this.birthday = birthday;
     }
@@ -64,8 +61,28 @@ public class UserGetDTO {
     public String getToken() {
         return token;
     }
-
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public String getProfilePicture() {
+        return profilePicture;
+    }
+    public void setProfilePicture(String profilePicture) {
+        this.profilePicture = profilePicture;
+    }
+
+    public int getGamesPlayed() {
+        return gamesPlayed;
+    }
+    public void setGamesPlayed(int gamesPlayed) {
+        this.gamesPlayed = gamesPlayed;
+    }
+    
+    public int getGamesWon() {
+        return gamesWon;
+    }
+    public void setGamesWon(int gamesWon) {
+        this.gamesWon = gamesWon;
     }
 }

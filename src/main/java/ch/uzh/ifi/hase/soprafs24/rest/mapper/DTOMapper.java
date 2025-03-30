@@ -25,13 +25,15 @@ import org.mapstruct.factory.Mappers;
 public interface DTOMapper {
 
     DTOMapper INSTANCE = Mappers.getMapper(DTOMapper.class);
-
+    // Creating user
     @Mapping(source = "name", target = "name")
     @Mapping(source = "username", target = "username")
     @Mapping(source = "birthday", target = "birthday")
+    @Mapping(source = "profilePicture", target = "profilePicture")
         // Password is handled separately in the service
     User convertUserPostDTOtoEntity(UserPostDTO userPostDTO);
 
+    //Returning user data
     @Mapping(source = "id", target = "id")
     @Mapping(source = "name", target = "name")
     @Mapping(source = "username", target = "username")
@@ -39,8 +41,13 @@ public interface DTOMapper {
     @Mapping(source = "creationDate", target = "creationDate")
     @Mapping(source = "birthday", target = "birthday")
     @Mapping(source = "token", target = "token")
+    @Mapping(source = "gamesPlayed", target = "gamesPlayed")
+    @Mapping(source = "gamesWon", target = "gamesWon")
+    @Mapping(source = "profilePicture", target = "profilePicture")
     User convertUserPostGETtoEntity(UserGetDTO UserGetDTO);
 
+
+    //Why do we need this? Question by Dora
     @Mapping(source = "id", target = "id")
     @Mapping(source = "name", target = "name")
     @Mapping(source = "username", target = "username")
@@ -48,10 +55,17 @@ public interface DTOMapper {
     @Mapping(source = "creationDate", target = "creationDate")
     @Mapping(source = "birthday", target = "birthday")
     @Mapping(source = "token", target = "token")
+    @Mapping(source = "gamesPlayed", target = "gamesPlayed")
+    @Mapping(source = "gamesWon", target = "gamesWon")
+    @Mapping(source = "profilePicture", target = "profilePicture")
     UserGetDTO convertEntityToUserGetDTO(User user);
 
+
+    // Updating user info
+    @Mapping(source = "name", target = "name")
     @Mapping(source = "username", target = "username")
     @Mapping(source = "birthday", target = "birthday")
+    @Mapping(source = "profilePicture", target = "profilePicture")
     void updateUserFromDTO(UserPutDTO userPutDTO, @MappingTarget User user);
 
     @Mapping(source = "id", target = "id")
