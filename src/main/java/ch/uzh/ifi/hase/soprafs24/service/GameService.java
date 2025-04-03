@@ -3,6 +3,7 @@ package ch.uzh.ifi.hase.soprafs24.service;
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs24.constant.GameStatus;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
+import ch.uzh.ifi.hase.soprafs24.entity.Move;
 import ch.uzh.ifi.hase.soprafs24.entity.Board;
 import ch.uzh.ifi.hase.soprafs24.entity.Game;
 import ch.uzh.ifi.hase.soprafs24.entity.Pawn;
@@ -110,24 +111,24 @@ public class GameService {
         Board board = new Board();
         board.setSizeBoard(9);
         newGame.setBoard(board); 
-        
+
+
+        Pawn pawn = new Pawn();
+        pawn.setR(9);
+        pawn.setC(4);
+        pawn.setColor("red");
+        pawn.setUser(userById);
+        pawn.setBoard(board);
+
         boardRepository.save(board);
         boardRepository.flush();
 
         newGame = gameRepository.save(newGame);
         gameRepository.flush();
-
-        Pawn pawn = new Pawn();
-        pawn.setRow(9);
-        pawn.setCol(4);
-        pawn.setSetBy(userById);
-        pawn.setBoard(board);
     
-        board.addPawn(pawn);
+        board.getPawns().add(pawn);
 
-        log.info("Before saving pawn");
         pawnRepository.save(pawn);
-        log.info("After saving pawn");
         pawnRepository.flush();
 
         log.debug("Created Information for Game: {}", newGame);
@@ -166,14 +167,18 @@ public class GameService {
         Board board = gameById.getBoard();
 
         Pawn pawn = new Pawn();
-        pawn.setRow(9);
-        pawn.setCol(4);
-        pawn.setSetBy(userById);
+        pawn.setR(0);
+        pawn.setC(4);
+        pawn.setColor("blue");
+        pawn.setUser(userById);
         pawn.setBoard(board);
     
-        board.addPawn(pawn);
+        //board.addPawn(pawn);
         pawnRepository.save(pawn);
         pawnRepository.flush();
+
+        board.getPawns().add(pawn);
+        boardRepository.flush();
 
         if (gameById.getCurrentUsers().size() == 2) {
             gameById.setGameStatus(GameStatus.RUNNING);
@@ -181,5 +186,58 @@ public class GameService {
 
         log.debug("Updadet Information for Game: {}", gameById);
     }
+
+    public void movePawn(Long gameId, Move move) {
+        Game gameById = gameRepository.findById(gameId).orElse(null);
+
+        String gameErrorMessage = "The Game does not exist!";
+        if (gameById == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, gameErrorMessage);
+        }
+
+        User currentUser = gameById.getCurrentTurn();
+        User moveUser = userRepository.findById(move.getUser().getId()).orElse(null);
+
+        String turnErrorMessage = "Not users turn!"; // check if it is actually current users turn 
+        if (currentUser != moveUser) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, turnErrorMessage);
+        }
+
+        // get pawns of current player
+        List<Pawn> pawns = gameById.getBoard().getPawns();
+
+        Pawn pawnToMove = null;
+        Pawn pawnNext = null;
+        List<Integer> startPosition = move.getStartPosition();
+        for (Pawn pawn : pawns) {
+            if (pawn.getUser().getId().equals(currentUser.getId())) {
+                pawnToMove = pawn;
+            } else {
+                pawnNext = pawn;
+            }
+        }
+
+        if (pawnToMove == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Pawn not found at the given start position or not owned by the current user.");
+        }
+
+    //check if pawn is allowed to move
+
+    //move pawn
+    List<Integer> endPosition = move.getEndPosition();
+    pawnToMove.setR(endPosition.get(0));
+    pawnToMove.setC(endPosition.get(1));
     
+
+    //check win condition
+
+    //update turn
+    User nextTurn = userRepository.findById(pawnNext.getId()).orElse(null);
+    gameById.setCurrentTurn(nextTurn);
+    gameRepository.flush();
+
+
+}
+        
+        
 }

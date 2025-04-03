@@ -2,6 +2,8 @@ package ch.uzh.ifi.hase.soprafs24.controller;
 
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.entity.Game;
+import ch.uzh.ifi.hase.soprafs24.entity.Move;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.MovePostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GameGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
@@ -78,6 +80,17 @@ public class GameController {
      User user = DTOMapper.INSTANCE.convertUserPostGETtoEntity(userGetDTO);
  
      gameService.joinGame(user, gameId);
+
+    }
+
+    @PostMapping("/game-lobby/{gameId}/move")
+    @ResponseStatus(HttpStatus.CREATED)
+    @ResponseBody
+    public void movePawn(@PathVariable Long gameId, @RequestBody MovePostDTO movePostDTO) {
+
+    Move move =  DTOMapper.INSTANCE.convertMovePostDTOtoEntity(movePostDTO);
+
+    gameService.movePawn(gameId, move);
 
     }
 

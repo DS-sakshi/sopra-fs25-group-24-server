@@ -2,6 +2,12 @@ package ch.uzh.ifi.hase.soprafs24.service;
 
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
+import ch.uzh.ifi.hase.soprafs24.entity.Board;
+import ch.uzh.ifi.hase.soprafs24.entity.Game;
+import ch.uzh.ifi.hase.soprafs24.entity.Pawn;
+import ch.uzh.ifi.hase.soprafs24.repository.BoardRepository;
+import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
+import ch.uzh.ifi.hase.soprafs24.repository.PawnRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPutDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
@@ -32,8 +38,23 @@ public class UserService {
 
     private final Logger log = LoggerFactory.getLogger(UserService.class);
 
-    private final UserRepository userRepository;
 
+    private final UserRepository userRepository;
+    private final GameRepository gameRepository;
+    private final BoardRepository boardRepository;
+    private final PawnRepository pawnRepository;
+
+
+    @Autowired
+    public UserService(@Qualifier("gameRepository") GameRepository gameRepository,
+     @Qualifier("userRepository") UserRepository userRepository,
+      @Qualifier("boardRepository") BoardRepository boardRepository,
+       @Qualifier("pawnRepository") PawnRepository pawnRepository) {
+        this.gameRepository = gameRepository;
+        this.userRepository = userRepository;
+        this.pawnRepository = pawnRepository;
+        this.boardRepository = boardRepository;
+    }
     /**
      * This is a helper method that will check the uniqueness criteria of the
      * username and the name
@@ -52,10 +73,7 @@ public class UserService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, baseErrorMessage);
         }
     }
-    @Autowired
-    public UserService(@Qualifier("userRepository") UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+
 
     public List<User> getUsers() {
         return this.userRepository.findAll();

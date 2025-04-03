@@ -56,6 +56,9 @@ public class User implements Serializable {
     @ManyToMany(mappedBy = "currentUsers", fetch = FetchType.LAZY)
     private Set<Game> games = new HashSet<>();
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<Pawn> pawns = new HashSet<>();
+
     public Long getId() {
         return id;
     }

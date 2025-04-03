@@ -48,13 +48,6 @@ public class Board implements Serializable {
         this.pawns = pawns;
     }
 
-    // public List<Wall> getWalls() {
-    //     return walls;
-    // }
-
-    // public void setWalls(List<Wall> walls) {
-    //     this.walls = walls;
-    // }
 
     public void addPawn(Pawn pawn) {
         pawns.add(pawn);

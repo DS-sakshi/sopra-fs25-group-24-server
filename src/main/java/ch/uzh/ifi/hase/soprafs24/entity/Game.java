@@ -47,9 +47,6 @@ public class Game implements Serializable {
     @JoinColumn(name = "board_id", unique = true)
     private Board board;
 
-    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Set<Pawn> pawns = new HashSet<>();
-
     @Column(nullable = false)
     private GameStatus gameStatus;
 
