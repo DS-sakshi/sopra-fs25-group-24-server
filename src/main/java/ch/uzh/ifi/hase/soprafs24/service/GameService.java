@@ -3,9 +3,13 @@ package ch.uzh.ifi.hase.soprafs24.service;
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs24.constant.GameStatus;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
+import ch.uzh.ifi.hase.soprafs24.entity.Board;
 import ch.uzh.ifi.hase.soprafs24.entity.Game;
+import ch.uzh.ifi.hase.soprafs24.entity.Pawn;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
+import ch.uzh.ifi.hase.soprafs24.repository.PawnRepository;
+import ch.uzh.ifi.hase.soprafs24.repository.BoardRepository;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPutDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
 import org.slf4j.Logger;
@@ -38,12 +42,19 @@ public class GameService {
 
     private final UserRepository userRepository;
     private final GameRepository gameRepository;
+    private final BoardRepository boardRepository;
+    private final PawnRepository pawnRepository;
 
 
     @Autowired
-    public GameService(@Qualifier("gameRepository") GameRepository gameRepository, @Qualifier("userRepository") UserRepository userRepository) {
+    public GameService(@Qualifier("gameRepository") GameRepository gameRepository,
+     @Qualifier("userRepository") UserRepository userRepository,
+      @Qualifier("boardRepository") BoardRepository boardRepository,
+       @Qualifier("pawnRepository") PawnRepository pawnRepository) {
         this.gameRepository = gameRepository;
         this.userRepository = userRepository;
+        this.pawnRepository = pawnRepository;
+        this.boardRepository = boardRepository;
     }
 
 
@@ -95,8 +106,29 @@ public class GameService {
         Set<User> userList = Set.of(userById);
         newGame.setCurrentUsers(userList); 
 
+
+        Board board = new Board();
+        board.setSizeBoard(9);
+        newGame.setBoard(board); 
+        
+        boardRepository.save(board);
+        boardRepository.flush();
+
         newGame = gameRepository.save(newGame);
         gameRepository.flush();
+
+        Pawn pawn = new Pawn();
+        pawn.setRow(9);
+        pawn.setCol(4);
+        pawn.setSetBy(userById);
+        pawn.setBoard(board);
+    
+        board.addPawn(pawn);
+
+        log.info("Before saving pawn");
+        pawnRepository.save(pawn);
+        log.info("After saving pawn");
+        pawnRepository.flush();
 
         log.debug("Created Information for Game: {}", newGame);
         return newGame;
@@ -131,13 +163,23 @@ public class GameService {
         gameById.addUser(userById);
         gameRepository.flush();
 
+        Board board = gameById.getBoard();
+
+        Pawn pawn = new Pawn();
+        pawn.setRow(9);
+        pawn.setCol(4);
+        pawn.setSetBy(userById);
+        pawn.setBoard(board);
+    
+        board.addPawn(pawn);
+        pawnRepository.save(pawn);
+        pawnRepository.flush();
+
         if (gameById.getCurrentUsers().size() == 2) {
             gameById.setGameStatus(GameStatus.RUNNING);
         }
 
         log.debug("Updadet Information for Game: {}", gameById);
     }
-
-
     
 }
