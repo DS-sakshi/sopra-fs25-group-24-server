@@ -1,5 +1,7 @@
 package ch.uzh.ifi.hase.soprafs24.controller;
 
+import ch.uzh.ifi.hase.soprafs24.constant.WallOrientation;
+import ch.uzh.ifi.hase.soprafs24.constant.MoveType;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.entity.Game;
 import ch.uzh.ifi.hase.soprafs24.entity.Move;
@@ -86,12 +88,32 @@ public class GameController {
     @PostMapping("/game-lobby/{gameId}/move")
     @ResponseStatus(HttpStatus.CREATED)
     @ResponseBody
-    public void movePawn(@PathVariable Long gameId, @RequestBody MovePostDTO movePostDTO) {
+    public void handleMove(@PathVariable Long gameId, @RequestBody MovePostDTO movePostDTO) {
 
     Move move =  DTOMapper.INSTANCE.convertMovePostDTOtoEntity(movePostDTO);
+    if (move.getType() == MoveType.MOVE_PAWN) { 
+        gameService.movePawn(gameId, move);
 
-    gameService.movePawn(gameId, move);
+    } else if (move.getType() == MoveType.ADD_WALL) {
 
+        if (move.getWallOrientation() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Wall orientation is required");
+        }
+
+        User user = move.getUser();
+        List<Integer> wallPosition = move.getWallPosition();
+
+        if (move.getType() != MoveType.ADD_WALL) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid move type for placing a wall");
+        }
+
+
+        int r = wallPosition.get(0);
+        int c = wallPosition.get(1);
+        WallOrientation orientation = move.getWallOrientation();
+
+        gameService.placeWall(gameId, user, r, c, orientation);
     }
 
+}
 }

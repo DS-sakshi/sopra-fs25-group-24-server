@@ -2,15 +2,19 @@ package ch.uzh.ifi.hase.soprafs24.service;
 
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs24.constant.GameStatus;
+import ch.uzh.ifi.hase.soprafs24.constant.MoveType;
+import ch.uzh.ifi.hase.soprafs24.constant.WallOrientation;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.entity.Move;
 import ch.uzh.ifi.hase.soprafs24.entity.Board;
 import ch.uzh.ifi.hase.soprafs24.entity.Game;
 import ch.uzh.ifi.hase.soprafs24.entity.Pawn;
+import ch.uzh.ifi.hase.soprafs24.entity.Wall;
 import ch.uzh.ifi.hase.soprafs24.repository.UserRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.PawnRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.BoardRepository;
+import ch.uzh.ifi.hase.soprafs24.repository.WallRepository;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPutDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
 import org.slf4j.Logger;
@@ -27,6 +31,7 @@ import java.util.Set;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.ArrayList;
 
 /**
  * User Service
@@ -45,17 +50,20 @@ public class GameService {
     private final GameRepository gameRepository;
     private final BoardRepository boardRepository;
     private final PawnRepository pawnRepository;
+    private final WallRepository wallRepository;
 
 
     @Autowired
     public GameService(@Qualifier("gameRepository") GameRepository gameRepository,
      @Qualifier("userRepository") UserRepository userRepository,
       @Qualifier("boardRepository") BoardRepository boardRepository,
-       @Qualifier("pawnRepository") PawnRepository pawnRepository) {
+       @Qualifier("pawnRepository") PawnRepository pawnRepository,
+       @Qualifier("wallRepository") WallRepository wallRepository) {
         this.gameRepository = gameRepository;
         this.userRepository = userRepository;
         this.pawnRepository = pawnRepository;
         this.boardRepository = boardRepository;
+        this.wallRepository = wallRepository;
     }
 
 
@@ -120,6 +128,14 @@ public class GameService {
         pawn.setUser(userById);
         pawn.setBoard(board);
 
+        Wall wall = new Wall();
+        wall.setR(0);
+        wall.setC(4);
+        wall.setColor("red");
+        wall.setOrientation(WallOrientation.VERTICAL);
+        wall.setUser(userById);
+        wall.setBoard(board);
+
         boardRepository.save(board);
         boardRepository.flush();
 
@@ -127,6 +143,7 @@ public class GameService {
         gameRepository.flush();
     
         board.getPawns().add(pawn);
+        board.getWalls().add(wall);
 
         pawnRepository.save(pawn);
         pawnRepository.flush();
@@ -172,6 +189,14 @@ public class GameService {
         pawn.setColor("blue");
         pawn.setUser(userById);
         pawn.setBoard(board);
+
+        Wall wall = new Wall();
+        wall.setR(0);
+        wall.setC(4);
+        wall.setColor("blue");
+        wall.setOrientation(WallOrientation.VERTICAL);
+        wall.setUser(userById);
+        wall.setBoard(board);
     
         //board.addPawn(pawn);
         pawnRepository.save(pawn);
@@ -221,23 +246,137 @@ public class GameService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Pawn not found at the given start position or not owned by the current user.");
         }
 
-    //check if pawn is allowed to move
+        //check if pawn is allowed to move
 
-    //move pawn
-    List<Integer> endPosition = move.getEndPosition();
-    pawnToMove.setR(endPosition.get(0));
-    pawnToMove.setC(endPosition.get(1));
+
+        //move pawn
+        List<Integer> endPosition = move.getEndPosition();
+        pawnToMove.setR(endPosition.get(0));
+        pawnToMove.setC(endPosition.get(1));
+        
+
+        //check win condition
+
+        //update turn
+        nextTurn(gameId);
+        gameRepository.flush();
+
+
+    }
+
+    public boolean canPlaceWall(Long gameId, User user) {
+        Game game = getGame(gameId);
+        Board board = game.getBoard();
+
+        List<Wall> userWalls = wallRepository.findByBoardIdAndUserId(board.getId(), user.getId());
+        int wallsPlaced = userWalls.size();
+        int maxWalls = 10;
+        // how i would extend for 4 players - Dora
+        // if (game.getCurrentUsers().size() == 4) {
+        //     maxWalls = 5;
+        // }
+
+        return maxWalls >= wallsPlaced;
+
+    }
+
+    // TODO findPath()
+    private boolean wallBlocksAllPaths(Board board, int r, int c, WallOrientation orientation) {
+        // For now, returns false to allow any wall placement
+        return false;
+    }
+
+
+    public void placeWall(Long gameId, User user, int r, int c, WallOrientation orientation) {
+        Game game = getGame(gameId);
+        User currentUser = game.getCurrentTurn();
+        Board board = game.getBoard();
+
+        if (!canPlaceWall(gameId, user)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Cannot place wall. User has no walls left.");
+        }
+
+
+        String turnErrorMessage = "Not users turn!"; // check if it is actually current users turn 
+        if (!currentUser.getId().equals(user.getId())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, turnErrorMessage);
+        }
+
+        if (r < 0 || r >= board.getSizeBoard() || c < 0 || c >= board.getSizeBoard()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid wall position: out of bound");
+        }
+
+        List<Wall> existingWalls = wallRepository.findByBoardId(board.getId());
+        for (Wall existingWall : existingWalls) {
+            //check for same position
+            if (existingWall.getR() == r && existingWall.getC() == c && existingWall.getOrientation() == orientation) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid wall position: wall already exists");
+            }
+            
+            //check for overlap in the same orientation
+            if (orientation == WallOrientation.HORIZONTAL) {
+                if (existingWall.getOrientation() == WallOrientation.HORIZONTAL && existingWall.getR() == r && (existingWall.getC() == c -1 || existingWall.getC() == c + 1)) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid wall position: wall overlaps with existing wall");
+                }
+            } else if (orientation == WallOrientation.VERTICAL) {
+                if (existingWall.getOrientation() == WallOrientation.VERTICAL && existingWall.getC() == c && (existingWall.getR() == r -1 || existingWall.getR() == r + 1)) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid wall position: wall overlaps with existing wall");
+                }
+            }
+            // check for cross
+            if(orientation == WallOrientation.HORIZONTAL) {
+                if ( existingWall.getOrientation() == WallOrientation.VERTICAL && existingWall.getR() == r -1 && existingWall.getC() == c + 1) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid wall position: wall overlaps with existing wall");
+                }
+            } else if (orientation == WallOrientation.VERTICAL) {
+                if (existingWall.getOrientation() == WallOrientation.HORIZONTAL && existingWall.getR() == r + 1 && existingWall.getC() == c -1 ) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid wall position: wall overlaps with existing wall");
+                }
+            }
+        }
+
+        if (wallBlocksAllPaths(board, r, c, orientation)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid wall position: wall blocks all paths");
+        }
+
+        //Create new 
+        Wall wall = new Wall();
+        wall.setR(r);
+        wall.setC(c);
+        wall.setOrientation(orientation);
+        wall.setUser(user);
+        if (user.getId().equals(game.getCreator().getId())) {
+            wall.setColor("red");
+        } else {
+            wall.setColor("blue");
+        }
+        wall.setBoard(board); 
+
+
+        board.getWalls().add(wall);
+
+        wallRepository.save(wall);
+
+        //update turn
+        nextTurn(gameId);
+        gameRepository.flush();
+    }
+
+    public void nextTurn(Long gameId) {
+        Game game = getGame(gameId);
+        User currentUser = game.getCurrentTurn();
+        Set<User> userSet = game.getCurrentUsers();
+        
+        List<User> users = new ArrayList<>(userSet);
+        
+        int currentIndex = users.indexOf(currentUser);
+        int nextIndex = (currentIndex + 1) % users.size();
+        User nextUser = users.get(nextIndex);
     
-
-    //check win condition
-
-    //update turn
-    User nextTurn = userRepository.findById(pawnNext.getId()).orElse(null);
-    gameById.setCurrentTurn(nextTurn);
-    gameRepository.flush();
-
-
-}
+        game.setCurrentTurn(nextUser);
+        gameRepository.flush();
+    }
+    
         
         
 }

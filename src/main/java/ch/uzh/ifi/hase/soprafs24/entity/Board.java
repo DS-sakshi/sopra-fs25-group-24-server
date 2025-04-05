@@ -21,8 +21,8 @@ public class Board implements Serializable {
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Pawn> pawns = new ArrayList<>();
     
-    // @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
-    // private List<Wall> walls = new ArrayList<>();
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<Wall> walls = new ArrayList<>();
 
     public Long getId() {
         return id;
@@ -59,15 +59,21 @@ public class Board implements Serializable {
         pawn.setBoard(null);
     }
 
-    //  public void addWall(Wall wall) {
-    //     walls.add(wall);
-    //     wall.setBoard(this);
-    // }
+    public List<Wall> getWalls() {
+        return walls;
+    }
+    public void setWalls(List<Wall> walls) {
+        this.walls = walls;
+    }
+     public void addWall(Wall wall) {
+        walls.add(wall);
+        wall.setBoard(this);
+    }
 
-    // public void removeWall(Wall wall) {
-    //     walls.remove(wall);
-    //     wall.setBoard(null);
-    // }
+    public void removeWall(Wall wall) {
+        walls.remove(wall);
+        wall.setBoard(null);
+    }
     
 
 

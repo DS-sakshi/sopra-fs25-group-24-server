@@ -47,6 +47,8 @@ public interface DTOMapper {
     @Mapping(source = "endPosition", target = "endPosition")
     @Mapping(source = "user", target = "user")
     @Mapping(source = "type", target = "type")
+    @Mapping(source = "wallPosition", target = "wallPosition")
+    @Mapping(source = "wallOrientation", target = "wallOrientation")
     Move convertMovePostDTOtoEntity(MovePostDTO MovePostDTO);
 
     @Mapping(source = "id", target = "id")
