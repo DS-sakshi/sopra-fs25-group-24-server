@@ -12,6 +12,8 @@ public class MovePostDTO {
     private List<Integer> endPosition;
     private User user;
     private MoveType type;
+    private List<Integer> wallPosition;
+    private String wallOrientation;
 
     public List<Integer> getStartPosition() {
         return startPosition;
@@ -43,5 +45,21 @@ public class MovePostDTO {
 
     public void setType(MoveType type) {
         this.type = type;
+    }
+
+    public List<Integer> getWallPosition() {
+        return wallPosition;
+    }
+
+    public void setWallPosition(List<Integer> wallPosition) {
+        this.wallPosition = wallPosition;
+    }
+
+    public String getWallOrientation() {
+        return wallOrientation;
+    }
+    
+    public void setWallOrientation(String wallOrientation) {
+        this.wallOrientation = wallOrientation;
     }
 }
