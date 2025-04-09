@@ -207,7 +207,14 @@ public class GameService {
 
         if (gameById.getCurrentUsers().size() == 2) {
             gameById.setGameStatus(GameStatus.RUNNING);
+
+            for (User player : gameById.getCurrentUsers()) {
+                player.increaseTotalGamesPlayed();
+            }
+
         }
+
+        //increaseTotalGamesPlayed
 
         log.debug("Updadet Information for Game: {}", gameById);
     }
@@ -375,6 +382,32 @@ public class GameService {
     
         game.setCurrentTurn(nextUser);
         gameRepository.flush();
+    }
+
+    
+    public void delete(Long gameId, User forfeiter) {
+        Game gameById = gameRepository.findById(gameId).orElse(null);
+
+        String gameErrorMessage = "The Game does not exist!";
+        if (gameById == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, gameErrorMessage);
+        }
+        
+        if(gameById.getGameStatus() == GameStatus.RUNNING){
+            gameById.setGameStatus(GameStatus.ENDED);
+
+            // get Users to adjust User statistics 
+            Set<User> users = gameById.getCurrentUsers();
+            for (User user : users) {
+                if (user.equals(forfeiter)) {
+                    user.increaseTotalGamesLost();
+                } else {
+                    user.increaseTotalGamesWon();
+                }
+            }
+        } else if (gameById.getGameStatus() == GameStatus.WAITING_FOR_USER) {
+            gameRepository.delete(gameById);
+        }
     }
     
         

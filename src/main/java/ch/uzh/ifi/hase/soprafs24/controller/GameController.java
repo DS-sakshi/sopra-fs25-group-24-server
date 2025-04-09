@@ -113,7 +113,13 @@ public class GameController {
         WallOrientation orientation = move.getWallOrientation();
 
         gameService.placeWall(gameId, user, r, c, orientation);
-    }
+    }}
 
-}
+    @DeleteMapping("/game-lobby/{gameId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @ResponseBody
+    public void delete(@PathVariable Long gameId, @RequestBody UserGetDTO userGetDTO) {
+        User user = DTOMapper.INSTANCE.convertUserPostGETtoEntity(userGetDTO);
+        gameService.delete(gameId, user);
+    }
 }
