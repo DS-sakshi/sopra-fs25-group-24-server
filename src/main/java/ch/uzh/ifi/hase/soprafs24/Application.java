@@ -24,7 +24,7 @@ public class Application {
     return "The application is running.";
   }
 
-  @Bean
+ @Bean
   public WebMvcConfigurer corsConfigurer() {
     return new WebMvcConfigurer() {
       @Override
@@ -32,7 +32,9 @@ public class Application {
       registry.addMapping("/**")
           .allowedOrigins("https://sopra-fs25-saksch-client.vercel.app", "http://localhost:3000")
           .allowedMethods("GET", "POST", "PUT", "DELETE","OPTIONS")
-          .allowedHeaders("Content-Type", "Authorization", "CurrentUserId")                           
+          .allowedHeaders("Content-Type", "Authorization", "CurrentUserId")
+          .allowCredentials(true)
+          .maxAge(3600)                           
           .exposedHeaders("CurrentUserId");
       }
     };
