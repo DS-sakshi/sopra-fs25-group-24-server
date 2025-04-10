@@ -32,7 +32,7 @@ public class Application {
       registry.addMapping("/**")
           .allowedOrigins("*")
           .allowedMethods("GET", "POST", "PUT", "DELETE","OPTIONS")
-          .allowed("Content-Type", "Authorization", "CurrentUserId")                           
+          .allowedHeaders("Content-Type", "Authorization", "CurrentUserId")                           
           .exposedHeaders("CurrentUserId")
           .allowCredentials(true);
       }
