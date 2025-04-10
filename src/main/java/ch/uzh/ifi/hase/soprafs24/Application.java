@@ -33,8 +33,7 @@ public class Application {
           .allowedOrigins("*")
           .allowedMethods("GET", "POST", "PUT", "DELETE","OPTIONS")
           .allowedHeaders("Content-Type", "Authorization", "CurrentUserId")                           
-          .exposedHeaders("CurrentUserId")
-          .allowCredentials(true);
+          .exposedHeaders("CurrentUserId");
       }
     };
   }
