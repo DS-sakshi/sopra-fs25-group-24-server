@@ -2,9 +2,11 @@ package ch.uzh.ifi.hase.soprafs24.controller;
 
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs24.constant.GameStatus;
+import ch.uzh.ifi.hase.soprafs24.constant.MoveType;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.entity.Game;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPostDTO;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.MovePostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPutDTO;
 import ch.uzh.ifi.hase.soprafs24.service.UserService;
@@ -90,6 +92,7 @@ public class GameControllerTest {
             .andExpect(jsonPath("$[0].currentUsers[0].username", is(user.getUsername())))
             .andExpect(jsonPath("$[0].currentUsers[0].status", is("ONLINE")));
     }
+    
 
 
     // Test 2: createGame (success case - 201)
@@ -209,6 +212,107 @@ public class GameControllerTest {
         mockMvc.perform(putRequest)
             .andExpect(status().isNotFound());
     }
+
+    // Test 6: Get existing game (200 OK)
+    @Test
+    public void getGame_existingId_returnsGame() throws Exception {
+        User user = new User();
+        user.setId(1L);
+        user.setName("Test User");
+        user.setUsername("testUsername");
+        user.setStatus(UserStatus.ONLINE);
+
+        Game game = new Game();
+        game.setId(1L);
+        game.setNumberUsers(2);
+        game.setSizeBoard(9);
+        game.setCreator(user);
+        game.setGameStatus(GameStatus.WAITING_FOR_USER);
+        game.setCurrentUsers(Set.of(user));
+
+        given(gameService.getGame(1L)).willReturn(game);
+
+        mockMvc.perform(get("/game-lobby/1"))
+           .andExpect(status().isOk())
+           .andExpect(jsonPath("$.id", is(1)))            
+           .andExpect(jsonPath("$.numberUsers", is(2)))
+           .andExpect(jsonPath("$.sizeBoard", is(9)))
+           .andExpect(jsonPath("$.creator.id", is(1)))
+           .andExpect(jsonPath("$.creator.username", is("testUsername")))
+           .andExpect(jsonPath("$.gameStatus", is("WAITING_FOR_USER")))
+           .andExpect(jsonPath("$.currentUsers[0].name", is(user.getName())))
+           .andExpect(jsonPath("$.currentUsers[0].username", is(user.getUsername())))
+           .andExpect(jsonPath("$.currentUsers[0].status", is("ONLINE")));
+    }
+
+    // Test 7: Get non-existent game (404 Not Found)
+    @Test
+    public void getGame_invalidId_throwsNotFound() throws Exception {
+        given(gameService.getGame(999L)).willThrow(new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+        mockMvc.perform(get("/game-lobby/999"))
+           .andExpect(status().isNotFound());
+        }
+
+        // Test 8: Valid pawn move (201 Created)
+    @Test
+    public void handleMove_validPawnMove() throws Exception {
+        MovePostDTO moveDTO = new MovePostDTO();
+        moveDTO.setType(MoveType.MOVE_PAWN);
+        moveDTO.setEndPosition(List.of(2, 3));
+        moveDTO.setStartPosition(List.of(2, 3));
+
+        mockMvc.perform(post("/game-lobby/1/move")
+           .contentType(MediaType.APPLICATION_JSON)
+           .content(asJsonString(moveDTO)))
+           .andExpect(status().isCreated());
+    }
+
+    // Test 9: Invalid wall placement (400 Bad Request)
+    @Test
+    public void handleMove_missingWallOrientation() throws Exception {
+        MovePostDTO moveDTO = new MovePostDTO();
+        moveDTO.setType(MoveType.ADD_WALL);
+        moveDTO.setWallPosition(List.of(4, 5));
+
+        mockMvc.perform(post("/game-lobby/1/move")
+           .contentType(MediaType.APPLICATION_JSON)
+           .content(asJsonString(moveDTO)))
+           .andExpect(status().isBadRequest());
+        }
+
+    // Test 10: Delete game successfully (204 No Content)
+    @Test
+    public void deleteGame_validRequest() throws Exception {
+        UserGetDTO userDTO = new UserGetDTO();
+        userDTO.setId(1L);
+    
+        mockMvc.perform(delete("/game-lobby/1")
+           .contentType(MediaType.APPLICATION_JSON)
+           .content(asJsonString(userDTO)))
+           .andExpect(status().isNoContent());
+        }
+
+    // Test 11: Delete non-existent game (404 Not Found)
+    @Test
+    public void deleteGame_invalidId() throws Exception {
+        UserGetDTO userDTO = new UserGetDTO();
+        userDTO.setId(1L);
+        userDTO.setName("Test User");
+        userDTO.setUsername("testUsername");
+    
+        doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Game not found"))
+            .when(gameService).delete(Mockito.eq(999L), Mockito.any(User.class));
+    
+        MockHttpServletRequestBuilder deleteRequest = delete("/game-lobby/{gameId}", 999L)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(asJsonString(userDTO));
+    
+        mockMvc.perform(deleteRequest)
+            .andExpect(status().isNotFound());
+    }
+    
+
     
 
     /**

@@ -34,12 +34,29 @@ import java.util.UUID;
 import java.util.ArrayList;
 
 /**
- * User Service
+ * Game Service
  * This class is the "worker" and responsible for all functionality related to
- * the user
+ * the game
  * (e.g., it creates, modifies, deletes, finds). The result will be passed back
  * to the caller.
+ * 
+ Assumptions for this code, maybe be changed later
+ For now the whole game logic is implemented for 2 players and with a board size of 9*9. 
+ 17*17 board because there is space betweeen 
+ This means for example, the game automatically starts once a player joins, as this is enough players. 
+ The pawn of the creator of the game starts at position 1/9 (row 1, coloumn 9). 
+ The second players pawn starts at 17/9.
+ So, board is actually bigger than board size. 
+
+ Board is assumed to look like this: 
+ 1/1,1/2,1/3,1/4,1/5,1/6,1/7,1/8,1/9 ...
+ 2/1,2/2,2/3,2/4,2/5,2/6,2/7,2/8,2/9 ...
+ 3/1,3/2,3/3,3/4,3/5,3/6,3/7,3/8,3/9 ...
+ ...
+
  */
+
+
 @Service
 @Transactional
 public class GameService {
@@ -66,26 +83,14 @@ public class GameService {
         this.wallRepository = wallRepository;
     }
 
-
-    /**
-     * This is a helper method that will check the uniqueness criteria of the
-     * username and the name
-     * defined in the User entity. The method will do nothing if the input is unique
-     * and throw an error otherwise.
-     *
-     * @param userToBeCreated
-     * @throws org.springframework.web.server.ResponseStatusException
-     * @see User
-     */
-
+    // return all games
     public List<Game> getGames() {
         return this.gameRepository.findAll();
     }
 
+    // returns a specific game
     public Game getGame(Long gameId) {
-
         Game gameById = gameRepository.findById(gameId).orElse(null);
-
         String gameErrorMessage = "The Game does not exist!";
         if (gameById == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, gameErrorMessage);
@@ -93,10 +98,11 @@ public class GameService {
 
         log.debug("Retrieved Game: {}", gameById);
         return gameById;
-
     }
      
+    // Creates a game. Set passed user as creator and the status to waiting for enough players. Also already define Board, Pawns and the wall 
     public Game createGame(User user) {
+        //check if user (creator of the game) exists 
         User userById = userRepository.findById(user.getId()).orElse(null);
 
         String baseErrorMessage = "The User does not exist or is not logged in currenlty!";
@@ -104,9 +110,9 @@ public class GameService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, baseErrorMessage);
         }
 
+        // Set the game properties (here use default values as only later user stories make this variable)
         Game newGame = new Game();
 
-        // Set the game properties (here use default values as only later user stories make this variable)
         newGame.setNumberUsers(2); 
         newGame.setSizeBoard(9); 
         newGame.setCreator(userById);
@@ -115,27 +121,20 @@ public class GameService {
         Set<User> userList = Set.of(userById);
         newGame.setCurrentUsers(userList); 
 
-
+        //set board
         Board board = new Board();
         board.setSizeBoard(9);
         newGame.setBoard(board); 
 
-
+        //set pawn
         Pawn pawn = new Pawn();
-        pawn.setR(9);
-        pawn.setC(4);
+        pawn.setR(1);
+        pawn.setC(9);
         pawn.setColor("red");
         pawn.setUser(userById);
         pawn.setBoard(board);
 
-        Wall wall = new Wall();
-        wall.setR(0);
-        wall.setC(4);
-        wall.setColor("red");
-        wall.setOrientation(WallOrientation.VERTICAL);
-        wall.setUser(userById);
-        wall.setBoard(board);
-
+        //save entities
         boardRepository.save(board);
         boardRepository.flush();
 
@@ -143,8 +142,7 @@ public class GameService {
         gameRepository.flush();
     
         board.getPawns().add(pawn);
-        board.getWalls().add(wall);
-
+        
         pawnRepository.save(pawn);
         pawnRepository.flush();
 
@@ -152,8 +150,9 @@ public class GameService {
         return newGame;
     }
 
-
+    // Join game. Set passed user as creator and the status running. 
     public void joinGame(User user, Long gameId) {
+        //check if user exists 
         User userById = userRepository.findById(user.getId()).orElse(null);
 
         String userErrorMessage = "The User does not exist or is not logged in currenlty!";
@@ -161,6 +160,7 @@ public class GameService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, userErrorMessage);
         }
 
+        //check if game exists 
         Game gameById = gameRepository.findById(gameId).orElse(null);
 
         String gameErrorMessage = "The Game does not exist!";
@@ -168,35 +168,30 @@ public class GameService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, gameErrorMessage);
         }
 
+        //check if game is full or running
         String gameFullErrorMessage = "The Game is already full or running!";
         if (gameById.getGameStatus() == GameStatus.RUNNING || gameById.getCurrentUsers().size() == 2) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, gameFullErrorMessage);
         }
 
+        //check if user is already part of the game
         String userGameErrorMessage = "The user is already part of the game!";
         if (gameById.getCurrentUsers().contains(userById)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, userGameErrorMessage);
         }
 
+        // add user to the game 
         gameById.addUser(userById);
         gameRepository.flush();
 
+        // create Pawn and add to board 
         Board board = gameById.getBoard();
-
         Pawn pawn = new Pawn();
-        pawn.setR(0);
-        pawn.setC(4);
+        pawn.setR(17);
+        pawn.setC(9);
         pawn.setColor("blue");
         pawn.setUser(userById);
         pawn.setBoard(board);
-
-        Wall wall = new Wall();
-        wall.setR(0);
-        wall.setC(4);
-        wall.setColor("blue");
-        wall.setOrientation(WallOrientation.VERTICAL);
-        wall.setUser(userById);
-        wall.setBoard(board);
     
         //board.addPawn(pawn);
         pawnRepository.save(pawn);
@@ -205,21 +200,21 @@ public class GameService {
         board.getPawns().add(pawn);
         boardRepository.flush();
 
+        //set Game status to running and increase times played
         if (gameById.getCurrentUsers().size() == 2) {
             gameById.setGameStatus(GameStatus.RUNNING);
 
             for (User player : gameById.getCurrentUsers()) {
                 player.increaseTotalGamesPlayed();
             }
-
         }
-
-        //increaseTotalGamesPlayed
 
         log.debug("Updadet Information for Game: {}", gameById);
     }
 
+    // Move Pawn.
     public void movePawn(Long gameId, Move move) {
+        //check if game exists 
         Game gameById = gameRepository.findById(gameId).orElse(null);
 
         String gameErrorMessage = "The Game does not exist!";
@@ -227,6 +222,7 @@ public class GameService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, gameErrorMessage);
         }
 
+        //check if its users turn 
         User currentUser = gameById.getCurrentTurn();
         User moveUser = userRepository.findById(move.getUser().getId()).orElse(null);
 
@@ -239,14 +235,10 @@ public class GameService {
         List<Pawn> pawns = gameById.getBoard().getPawns();
 
         Pawn pawnToMove = null;
-        Pawn pawnNext = null;
-        List<Integer> startPosition = move.getStartPosition();
         for (Pawn pawn : pawns) {
             if (pawn.getUser().getId().equals(currentUser.getId())) {
                 pawnToMove = pawn;
-            } else {
-                pawnNext = pawn;
-            }
+            } 
         }
 
         if (pawnToMove == null) {
@@ -270,6 +262,7 @@ public class GameService {
 
 
     }
+
 
     public boolean canPlaceWall(Long gameId, User user) {
         Game game = getGame(gameId);
@@ -396,7 +389,7 @@ public class GameService {
         if(gameById.getGameStatus() == GameStatus.RUNNING){
             gameById.setGameStatus(GameStatus.ENDED);
 
-            // get Users to adjust User statistics 
+            // get Users to adjust User statistics (User that forfeits the game loses while the other wins)
             Set<User> users = gameById.getCurrentUsers();
             for (User user : users) {
                 if (user.equals(forfeiter)) {
@@ -409,6 +402,9 @@ public class GameService {
             gameRepository.delete(gameById);
         }
     }
+
+
+
     
         
         
