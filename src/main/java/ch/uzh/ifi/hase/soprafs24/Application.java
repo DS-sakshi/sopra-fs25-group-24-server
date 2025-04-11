@@ -8,7 +8,6 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
 @RestController
 @SpringBootApplication
 public class Application {
@@ -24,12 +23,18 @@ public class Application {
     return "The application is running.";
   }
 
-  @Bean
+ @Bean
   public WebMvcConfigurer corsConfigurer() {
     return new WebMvcConfigurer() {
       @Override
-      public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**").allowedOrigins("*").allowedMethods("*");
+    public void addCorsMappings(CorsRegistry registry) {
+      registry.addMapping("/**")
+          .allowedOrigins("https://sopra-fs25-saksch-client.vercel.app", "http://localhost:3000")
+          .allowedMethods("GET", "POST", "PUT", "DELETE","OPTIONS")
+          .allowedHeaders("Content-Type", "Authorization", "CurrentUserId")
+          .allowCredentials(true)
+          .maxAge(3600)                           
+          .exposedHeaders("CurrentUserId");
       }
     };
   }

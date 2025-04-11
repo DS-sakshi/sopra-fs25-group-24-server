@@ -86,4 +86,30 @@ public class UserServiceTest {
     assertThrows(ResponseStatusException.class, () -> userService.createUser(testUser));
   }
 
+  @Test
+  public void registerUser_emptyUsername_throwsException() {
+    // given
+    testUser.setUsername("");
+
+    // when
+    Mockito.when(userRepository.findByName(Mockito.any())).thenReturn(null);
+    Mockito.when(userRepository.findByUsername(Mockito.any())).thenReturn(null);
+
+    // then
+    assertThrows(ResponseStatusException.class, () -> userService.createUser(testUser));
+  }
+
+  @Test
+  public void registerUser_emptyPassword_throwsException() {
+    // given
+    testUser.setPassword("");
+
+    // when
+    Mockito.when(userRepository.findByName(Mockito.any())).thenReturn(null);
+    Mockito.when(userRepository.findByUsername(Mockito.any())).thenReturn(null);
+
+    // then
+    assertThrows(ResponseStatusException.class, () -> userService.createUser(testUser));
+  }
+
 }

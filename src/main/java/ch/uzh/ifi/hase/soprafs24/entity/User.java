@@ -53,11 +53,20 @@ public class User implements Serializable {
     @Column
     private Date birthday;
 
-    @ManyToMany(mappedBy = "currentUsers", fetch = FetchType.LAZY)
+    @ManyToMany(mappedBy = "currentUsers", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private Set<Game> games = new HashSet<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<Pawn> pawns = new HashSet<>();
+
+    @Column
+    private int totalGamesWon;
+
+    @Column
+    private int totalGamesLost;
+
+    @Column
+    private int totalGamesPlayed;
 
     public Long getId() {
         return id;
@@ -129,5 +138,29 @@ public class User implements Serializable {
 
     public void setGames(Set<Game> games) {
         this.games = games;
+    }
+
+    public int getTotalGamesWon() {
+        return totalGamesWon;
+    }
+
+    public void increaseTotalGamesWon() {
+        this.totalGamesWon++;
+    }
+
+    public int getTotalGamesLost() {
+        return totalGamesLost;
+    }
+
+    public void increaseTotalGamesLost() {
+        this.totalGamesLost++;
+    }
+
+    public int getTotalGamesPlayed() {
+        return totalGamesPlayed;
+    }
+
+    public void increaseTotalGamesPlayed() {
+        this.totalGamesPlayed++;
     }
 }

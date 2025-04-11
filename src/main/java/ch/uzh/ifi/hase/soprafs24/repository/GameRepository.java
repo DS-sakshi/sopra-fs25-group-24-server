@@ -9,4 +9,3 @@ public interface GameRepository extends JpaRepository<Game, Long> {
   Game findById(long id);
 
 }
-
