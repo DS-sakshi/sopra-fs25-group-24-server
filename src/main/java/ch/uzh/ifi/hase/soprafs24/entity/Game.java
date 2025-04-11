@@ -43,6 +43,10 @@ public class Game implements Serializable {
     @JoinColumn(name = "current_turn_id", nullable = false)
     private User currentTurn;
 
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JoinColumn(name = "board_id", unique = true)
+    private Board board;
+
     @Column(nullable = false)
     private GameStatus gameStatus;
 
@@ -118,5 +122,13 @@ public class Game implements Serializable {
 
     public void setGameStatus(GameStatus gameStatus) {
         this.gameStatus = gameStatus;
+    }
+
+    public Board getBoard() {
+        return board;
+    }
+
+    public void setBoard(Board board) {
+        this.board = board;
     }
 }

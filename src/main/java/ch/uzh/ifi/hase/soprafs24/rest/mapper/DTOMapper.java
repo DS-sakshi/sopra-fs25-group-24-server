@@ -2,10 +2,12 @@ package ch.uzh.ifi.hase.soprafs24.rest.mapper;
 
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.entity.Game;
+import ch.uzh.ifi.hase.soprafs24.entity.Move;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GameGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.MovePostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPutDTO;
 import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
@@ -40,6 +42,12 @@ public interface DTOMapper {
     @Mapping(source = "birthday", target = "birthday")
     @Mapping(source = "token", target = "token")
     User convertUserPostGETtoEntity(UserGetDTO UserGetDTO);
+
+    @Mapping(source = "startPosition", target = "startPosition")
+    @Mapping(source = "endPosition", target = "endPosition")
+    @Mapping(source = "user", target = "user")
+    @Mapping(source = "type", target = "type")
+    Move convertMovePostDTOtoEntity(MovePostDTO MovePostDTO);
 
     @Mapping(source = "id", target = "id")
     @Mapping(source = "name", target = "name")
