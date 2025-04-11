@@ -77,5 +77,56 @@ public class UserServiceIntegrationTest {
     assertThrows(ResponseStatusException.class, () -> userService.createUser(testUser2));
   }
 
+    /*
+   * Userstory 2
+   */
+  @Test
+  public void logoutUser_statusOffline() {
+    User testUser = new User();
+    testUser.setName("testName");
+    testUser.setUsername("testUsername"); 
+    testUser.setPassword("password");
+    testUser.setStatus(UserStatus.ONLINE);
   
+    User createdUser = userService.createUser(testUser);
+    userRepository.save(createdUser);
+    userRepository.flush();
+  
+    // Verify user is online before logout
+    assertEquals(UserStatus.ONLINE, createdUser.getStatus());
+  
+
+    userService.logoutUser(createdUser.getId());
+    
+    User userAfterLogout = userRepository.findByUsername("testUsername");
+    assertNotNull(userAfterLogout, "User should exist after logout");
+    assertEquals(UserStatus.OFFLINE, userAfterLogout.getStatus());
+  }
+  
+  @Test
+  public void loginUser_ValidInputs_statusToOnline() {
+    User testUser = new User();
+    testUser.setName("testName");
+    testUser.setUsername("testUsername");
+    testUser.setPassword("password");
+    testUser.setStatus(UserStatus.OFFLINE);
+   
+    User createdUser = userService.createUser(testUser);
+    createdUser.setStatus(UserStatus.OFFLINE);
+    userRepository.save(createdUser);
+    userRepository.flush();
+  
+    User userBeforeLogin = userRepository.findByUsername("testUsername");
+    assertEquals(UserStatus.OFFLINE, userBeforeLogin.getStatus(), "User should be OFFLINE before login");
+  
+    User loggedInUser = userService.loginUser(testUser.getUsername(), testUser.getPassword());
+  
+    // now online after login 
+    assertEquals(UserStatus.ONLINE, loggedInUser.getStatus());
+  
+    // Double-check by getting fresh from DB
+    User userAfterLogin = userRepository.findByUsername("testUsername");
+    assertEquals(UserStatus.ONLINE, userAfterLogin.getStatus());
+  }
 }
+
