@@ -45,6 +45,9 @@ public class UserControllerTest {
     @MockBean
     private UserService userService;
 
+/*
+ * Test for Userstory 1
+ */
     @Test
     public void givenUsers_whenGetUsers_thenReturnJsonArray() throws Exception {
         // given
@@ -299,6 +302,22 @@ public class UserControllerTest {
                         .andExpect(status().isUnauthorized());
         }
 
+<<<<<<< Updated upstream
+=======
+        @Test
+        public void logoutUser_successful() throws Exception {
+        
+        // Perform logout request
+        MockHttpServletRequestBuilder postRequest = post("/logout/1").contentType(MediaType.APPLICATION_JSON);
+        
+        // Verify the response is No Content (204)
+        mockMvc.perform(postRequest).andExpect(status().isNoContent());
+        
+        // Verify if correct user was logged out
+        Mockito.verify(userService).logoutUser(1L);
+        }
+
+>>>>>>> Stashed changes
     /**
      * Helper Method to convert userPostDTO into a JSON string such that the input
      * can be processed
