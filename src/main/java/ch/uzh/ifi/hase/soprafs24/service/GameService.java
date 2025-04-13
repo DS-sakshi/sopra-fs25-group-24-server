@@ -1,5 +1,6 @@
 package ch.uzh.ifi.hase.soprafs24.service;
 
+import ch.uzh.ifi.hase.soprafs24.service.MoveService;
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs24.constant.GameStatus;
 import ch.uzh.ifi.hase.soprafs24.constant.MoveType;
@@ -55,7 +56,7 @@ import java.util.ArrayList;
  ...
 
  */
-
+//TODO: correct tests so they match the new code - Dora
 
 @Service
 @Transactional
@@ -68,6 +69,7 @@ public class GameService {
     private final BoardRepository boardRepository;
     private final PawnRepository pawnRepository;
     private final WallRepository wallRepository;
+    private final MoveService moveService;
 
 
     @Autowired
@@ -75,12 +77,14 @@ public class GameService {
      @Qualifier("userRepository") UserRepository userRepository,
       @Qualifier("boardRepository") BoardRepository boardRepository,
        @Qualifier("pawnRepository") PawnRepository pawnRepository,
-       @Qualifier("wallRepository") WallRepository wallRepository) {
+       @Qualifier("wallRepository") WallRepository wallRepository,
+       MoveService moveService) {
         this.gameRepository = gameRepository;
         this.userRepository = userRepository;
         this.pawnRepository = pawnRepository;
         this.boardRepository = boardRepository;
         this.wallRepository = wallRepository;
+        this.moveService = moveService;
     }
 
     // return all games
@@ -125,6 +129,7 @@ public class GameService {
         Board board = new Board();
         board.setSizeBoard(9);
         newGame.setBoard(board); 
+        board.setGame(newGame);
 
         //set pawn
         Pawn pawn = new Pawn();
@@ -222,6 +227,9 @@ public class GameService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, gameErrorMessage);
         }
 
+        Board board = gameById.getBoard();
+        List<Wall> walls = board.getWalls();  
+
         //check if its users turn 
         User currentUser = gameById.getCurrentTurn();
         User moveUser = userRepository.findById(move.getUser().getId()).orElse(null);
@@ -246,16 +254,37 @@ public class GameService {
         }
 
         //check if pawn is allowed to move
+  
 
-
-        //move pawn
         List<Integer> endPosition = move.getEndPosition();
+        int targetR = endPosition.get(0);
+        int targetC = endPosition.get(1);
+    
+
+        // Validate the move 
+        if (!moveService.isValidPawnMove(board, pawnToMove, targetR, targetC, walls)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid pawn move.");
+        }
+
+        // Move  pawn
         pawnToMove.setR(endPosition.get(0));
         pawnToMove.setC(endPosition.get(1));
         
-
+        //TODO check if winning condition is complete - Dora
         //check win condition
+        int goalRow = moveService.getGoalRow(gameById, board, pawnToMove);
+        if (pawnToMove.getR() == goalRow) {
+  
+            gameById.setGameStatus(GameStatus.ENDED);
 
+            currentUser.increaseTotalGamesWon();
+            for (User player : gameById.getCurrentUsers()) {
+                if (!player.equals(currentUser)) {
+                    player.increaseTotalGamesLost();
+                }
+            } 
+            return;
+        }
         //update turn
         nextTurn(gameId);
         gameRepository.flush();
@@ -280,17 +309,14 @@ public class GameService {
 
     }
 
-    // TODO findPath()
-    private boolean wallBlocksAllPaths(Board board, int r, int c, WallOrientation orientation) {
-        // For now, returns false to allow any wall placement
-        return false;
-    }
+
 
 
     public void placeWall(Long gameId, User user, int r, int c, WallOrientation orientation) {
         Game game = getGame(gameId);
         User currentUser = game.getCurrentTurn();
         Board board = game.getBoard();
+        List<Wall> existingWalls = wallRepository.findByBoardId(board.getId());
 
         if (!canPlaceWall(gameId, user)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Cannot place wall. User has no walls left.");
@@ -306,7 +332,7 @@ public class GameService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid wall position: out of bound");
         }
 
-        List<Wall> existingWalls = wallRepository.findByBoardId(board.getId());
+
         for (Wall existingWall : existingWalls) {
             //check for same position
             if (existingWall.getR() == r && existingWall.getC() == c && existingWall.getOrientation() == orientation) {
@@ -335,7 +361,7 @@ public class GameService {
             }
         }
 
-        if (wallBlocksAllPaths(board, r, c, orientation)) {
+        if (moveService.wouldBlockAllPaths(game, board, existingWalls, r, c, orientation)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid wall position: wall blocks all paths");
         }
 

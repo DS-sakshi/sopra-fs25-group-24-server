@@ -1,5 +1,7 @@
 package ch.uzh.ifi.hase.soprafs24.service;
 
+import org.springframework.stereotype.Service;
+
 import ch.uzh.ifi.hase.soprafs24.constant.MoveType;
 import ch.uzh.ifi.hase.soprafs24.constant.WallOrientation;
 import ch.uzh.ifi.hase.soprafs24.entity.Board;
@@ -19,14 +21,22 @@ Creator starts from the top field and moves down to win
 The user that joins starts from the bottom and moves up to win
 This code will for now just check if there is a path and not provide a shortest path
 A findShortestPath() will be implemented later
-
+Boardsize is assumed to be just taken from the the boardrepository... but now we changed it to 17*17 (=0...16 * 0*16) for 9*9, have to think how to change that
+Walls are assumed to be placed in the middle of their tracks
 */
 
-public class findPathService {
+
+
+@Service
+public class MoveService {
     
     //checks if a field is reachable
-    public boolean isReachable(Board board, Pawn pawn, int startR, int startC, int goalR, List<Wall> walls) {
+    public boolean hasPathToGoal(Game game, Board board, Pawn pawn, List<Wall> walls) {
         int boardSize = board.getSizeBoard();
+        int startR = pawn.getR();
+        int startC = pawn.getC();
+        int goalR = getGoalRow(game, board, pawn);
+
         boolean[][] visited = new boolean[boardSize][boardSize];
         Queue<int[]> queue = new LinkedList<>();
         queue.add(new int[]{startR, startC});
@@ -43,14 +53,16 @@ public class findPathService {
             }
 
             // Check all possible moves
-            int[][] directions = {{0, 1}, {0, -1}, {1, 0}, {-1, 0} };
+            int[][] directions = {{0, 2}, {0, -2}, {2, 0}, {-2, 0} };
             for (int[] dir : directions) {  
                 int newR = r + dir[0];
                 int newC = c + dir[1];
 
-                if (newR >= 0 && newR < boardSize && newC >= 0 && newC < boardSize) {
+                if (newR >= 0 && newR < boardSize &&
+                    newC >= 0 && newC < boardSize) {
                     
-                    if (isValidPawnMove(board, pawn, newR, newC, walls) && !visited[newR][newC]) {
+                    if (isValidPawnMove(board, pawn, newR, newC, walls) && 
+                        !visited[newR][newC]) {
                         visited[newR][newC] = true;
                         queue.add(new int[]{newR, newC});
                     }
@@ -61,13 +73,6 @@ public class findPathService {
     }
 
 
-    // Check if there is a path to the goal
-    public boolean hasPathToGoal(Game game, Board board, Pawn pawn, List<Wall> walls) {
-        int boardSize = board.getSizeBoard();
-        int goalR = getGoalRow(game, board, pawn); 
- 
-        return (isReachable(board, pawn, pawn.getR(), pawn.getC(), goalR, walls ));
-    }
 
     // Fixin scope issues by adding a new function
     // Winning condition by getGoalRow
@@ -82,24 +87,32 @@ public class findPathService {
  
 
 
-    // Implement the logic to validate the move
+    // Validate move
     public boolean isValidPawnMove(Board board, Pawn pawn, int targetR, int targetC, List<Wall> walls) {
         int startR = pawn.getR();
         int startC = pawn.getC();
 
+
+
         // Check if the target position is within the board boundaries
-        if (targetR < 0 || targetR >= board.getSizeBoard() || targetC < 0 || targetC >= board.getSizeBoard()) {
+        if (!isValidPawnField(board, pawn, targetR, targetC)) {
             return false;
         }
 
         // Check if the target position is adjacent to the current position
-        if (!((Math.abs(targetR - startR) == 1 && Math.abs(targetC - startC) == 0) || (Math.abs(targetR - startR) == 0 && Math.abs(targetC - startC) == 1))) {
-            return false;
+        if (!((Math.abs(targetR - startR) == 2 && 
+            Math.abs(targetC - startC) == 0) ||
+            (Math.abs(targetR - startR) == 0 && 
+            Math.abs(targetC - startC) == 2))) {
+            if (!isValidJumpMove(board, pawn, targetR, targetC, walls)) {
+                return false;
+            }
         }
 
         // Check if the target position is occupied by another pawn
         for (Pawn otherPawn : board.getPawns()) {
-            if (otherPawn.getR() == targetR && otherPawn.getC() == targetC) {
+            if (otherPawn.getR() == targetR &&
+                otherPawn.getC() == targetC) {
                 return false;
             }
         }
@@ -110,7 +123,9 @@ public class findPathService {
             
         }
 
-        // TODO: check bc of jumping
+        if (!isValidJumpMove(board, pawn, targetR, targetC, walls)) {
+            return false;
+        }
         return true;
         }
 
@@ -127,72 +142,40 @@ public class findPathService {
 
     
     // Check if a wall is blocking the path between two positions
-    // The walls are on the upper left corner of a field
-    // ToDo check with frontend how they implement walls
-/*     private boolean isWallBlockingPath(int startR, int startC, int targetR, int targetC, List<Wall> walls) {
-        for (Wall wall : walls) {
-            if (wall.getOrientation() == WallOrientation.HORIZONTAL) {
-                //Moves up
-                if (startR == wall.getR() && targetR > wall.getR() && (Math.abs(startC - wall.getC()) <= 1 )){
-                    return true;
-                    //moves down
-                } else if (startR > wall.getR() && targetR == wall.getR() && (Math.abs(startC - wall.getC()) <= 1 )) {
-                    return true;
-                }
-                 
-            } else  {
-                // Moves right
-                if (startC < wall.getC() && targetC == wall.getC() && (Math.abs(startR- wall.getR()) <= 1 )) {
-                    return true;
-                // Moves left
-                } else if (startC == wall.getC() && targetC < wall.getC() && (Math.abs(startR- wall.getR()) <= 1 )){
-                    return true;
-                
-                }
-            }
-        }
-        
-        return false;
-    }
-    
- */
+    // For new board, wall are checked as the intersection of the two positions
     private boolean isWallBlockingPath(int startR, int startC, int targetR, int targetC, List<Wall> walls) {
         // Moving right
-        if (startR == targetR && startC + 1 == targetC) {
+        if (startR == targetR && startC + 2 == targetC) {
             for (Wall wall : walls) {
                 if (wall.getOrientation() == WallOrientation.VERTICAL && 
-                    wall.getR() <= startR && startR < wall.getR() + 2 && // Wall height spans this row
-                    wall.getC() == startC) { // Wall is positioned at the right edge of the starting cell
+                    Math.abs(startR - wall.getR()) <=1 && wall.getC() == startC + 1) {
                     return true;
                 }
             }
         } 
         // Moving left
-        else if (startR == targetR && startC - 1 == targetC) {
+        else if (startR == targetR && startC - 2 == targetC) {
             for (Wall wall : walls) {
                 if (wall.getOrientation() == WallOrientation.VERTICAL && 
-                    wall.getR() <= startR && startR < wall.getR() + 2 && // Wall height spans this row
-                    wall.getC() == targetC) { // Wall is positioned at the right edge of the target cell
+                    Math.abs(startR - wall.getR()) <= 1 && wall.getC() == targetC - 1) { 
                     return true;
                 }
             }
         }
         // Moving down
-        else if (startC == targetC && startR + 1 == targetR) {
+        else if (startC == targetC && startR + 2 == targetR) {
             for (Wall wall : walls) {
                 if (wall.getOrientation() == WallOrientation.HORIZONTAL && 
-                    wall.getC() <= startC && startC < wall.getC() + 2 && // Wall width spans this column
-                    wall.getR() == startR) { // Wall is positioned at the bottom edge of the starting cell
+                    Math.abs(startC - wall.getC()) <= 1 && wall.getR() == startR + 1) { 
                     return true;
                 }
             }
         }
         // Moving up
-        else if (startC == targetC && startR - 1 == targetR) {
+        else if (startC == targetC && startR - 2 == targetR) {
             for (Wall wall : walls) {
                 if (wall.getOrientation() == WallOrientation.HORIZONTAL && 
-                    wall.getC() <= startC && startC < wall.getC() + 2 && // Wall width spans this column
-                    wall.getR() == targetR) { // Wall is positioned at the bottom edge of the target cell
+                    Math.abs(startC - wall.getC()) <= 1 && wall.getR() == startR - 1) { 
                     return true;
                 }
             }
@@ -208,6 +191,10 @@ public class findPathService {
         tempWall.setR(r);
         tempWall.setC(c);
         tempWall.setOrientation(orientation);
+
+        if (!isValidWallField(board, tempWall)) {
+            return false; // Invalid wall position
+        }
         
         //Creates temp list and checks if it works with new wall
         List<Wall> wallsWithNew = new ArrayList<>(existingWalls);
@@ -232,13 +219,14 @@ public class findPathService {
         Pawn adjacentPawn = null; // For scope
         
         // Possible adjacent positions: up, down, left, right
-        int[][] adjacentDirections = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+        int[][] adjacentDirections = {{-2, 0}, {2, 0}, {0, -2}, {0, 2}};
         for (int[] dir : adjacentDirections) {
             int adjR = startR + dir[0];
             int adjC = startC + dir[1];
             
             // Check if position is within board and contains a pawn
-            if (adjR >= 0 && adjR < board.getSizeBoard() && adjC >= 0 && adjC < board.getSizeBoard()) {
+            if (adjR >= 0 && adjR < board.getSizeBoard() &&
+                adjC >= 0 && adjC < board.getSizeBoard()) {
                 for (Pawn otherPawn : board.getPawns()) {
                     if (otherPawn.getR() == adjR && otherPawn.getC() == adjC) {
                         adjacentPawn = otherPawn;
@@ -261,7 +249,7 @@ public class findPathService {
             }
         }
         
-        return false; // No valid jump move found
+        return false;
     }
     
     private boolean isValidDiagonalJump(Board board, Pawn pawn, int adjR, int adjC, List<Wall> walls) {
@@ -274,10 +262,10 @@ public class findPathService {
         
         // Possible diagonal directions based on the adjacent pawn position
         int[][] diagonalOptions = {
-            {dirR, dirC + 1},  // Diagonal right from direction
-            {dirR, dirC - 1},  // Diagonal left from direction
-            {dirR + 1, dirC},  // Diagonal down from direction
-            {dirR - 1, dirC}   // Diagonal up from direction
+            {dirR, dirC + 2},  // Diagonal right from direction
+            {dirR, dirC - 2},  // Diagonal left from direction
+            {dirR + 2, dirC},  // Diagonal down from direction
+            {dirR - 2, dirC}   // Diagonal up from direction
         };
         
         for (int[] diag : diagonalOptions) {
@@ -301,5 +289,35 @@ public class findPathService {
         }
         
         return false; // No valid diagonal jump found
+    }
+
+    //Check if pawn field
+    public boolean isValidPawnField(Board board, Pawn pawn, int targetR, int targetC) {
+        // Check if the target position is within the board boundaries
+        if (targetR < 0 || targetR >= board.getSizeBoard() ||
+            targetC < 0 || targetC >= board.getSizeBoard()) {
+            return false;
+        }
+
+        //Check if even field
+        if (targetR % 2 != 0 || targetC % 2 != 0) {
+            return false;
+        }
+        return true;
+    }
+
+    //Check if wall field
+    public boolean isValidWallField(Board board, Wall wall) {
+        // Check if the target position is within the board boundaries
+        if (wall.getR() < 0 || wall.getR() >= board.getSizeBoard() ||
+            wall.getC() < 0 || wall.getC() >= board.getSizeBoard()) {
+            return false;
+        }
+
+        //Check if odd field
+        if (wall.getR() % 2 == 0 || wall.getC() % 2 == 0) {
+            return false;
+        }
+        return true;
     }
 }
