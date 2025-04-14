@@ -45,6 +45,9 @@ public class GameServiceTest {
     @Mock
     private WallRepository wallRepository;
 
+    @Mock
+    private MoveService moveService;
+
     @InjectMocks
     private GameService gameService;
 
@@ -113,6 +116,12 @@ public class GameServiceTest {
         when(gameRepository.save(any(Game.class))).thenReturn(testGame);
         when(boardRepository.save(any(Board.class))).thenReturn(testBoard);
         when(pawnRepository.save(any(Pawn.class))).thenReturn(testPawn);
+
+        // for the MoveService mock
+        when(moveService.isValidPawnMove(any(), any(), anyInt(), anyInt(), any())).thenReturn(true);
+        when(moveService.getGoalRow(any(), any(), any())).thenReturn(17);  // Return a goal row that won't trigger win condition
+        when(moveService.wouldBlockAllPaths(any(), any(), any(), anyInt(), anyInt(), any())).thenReturn(false);
+    
     }
  
     @Test

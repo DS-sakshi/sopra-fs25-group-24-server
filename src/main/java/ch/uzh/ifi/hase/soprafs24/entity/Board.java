@@ -24,6 +24,10 @@ public class Board implements Serializable {
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Wall> walls = new ArrayList<>();
 
+    //easier to move between the two Services, makes also sense to have it here
+    @OneToOne(mappedBy = "board")
+    private Game game;
+
     public Long getId() {
         return id;
     }
@@ -75,6 +79,12 @@ public class Board implements Serializable {
         wall.setBoard(null);
     }
     
+    public Game getGame() {
+        return game;
+    }
+    public void setGame(Game game) {
+        this.game = game;
+    }
 
 
 }
