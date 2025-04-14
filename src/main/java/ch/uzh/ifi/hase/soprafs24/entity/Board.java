@@ -37,7 +37,7 @@ public class Board implements Serializable {
     }
 
     public int getSizeBoard() {
-        return sizeBoard;
+        return (2*sizeBoard-1);
     }
 
     public void setSizeBoard(int sizeBoard) {

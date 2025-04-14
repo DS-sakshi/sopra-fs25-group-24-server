@@ -40,19 +40,21 @@ import java.util.ArrayList;
  * the game
  * (e.g., it creates, modifies, deletes, finds). The result will be passed back
  * to the caller.
- * 
+ * Position [r, c]
+
  Assumptions for this code, maybe be changed later
  For now the whole game logic is implemented for 2 players and with a board size of 9*9. 
- 17*17 board because there is space betweeen 
+ 16*16 board because there is space betweeen and we start counting from 0.
  This means for example, the game automatically starts once a player joins, as this is enough players. 
- The pawn of the creator of the game starts at position 1/9 (row 1, coloumn 9). 
- The second players pawn starts at 17/9.
+ The pawn of the creator of the game starts at position 0/8 (row 0, coloumn 8). 
+ The second players pawn starts at 16/8.
  So, board is actually bigger than board size. 
 
  Board is assumed to look like this: 
- 1/1,1/2,1/3,1/4,1/5,1/6,1/7,1/8,1/9 ...
- 2/1,2/2,2/3,2/4,2/5,2/6,2/7,2/8,2/9 ...
- 3/1,3/2,3/3,3/4,3/5,3/6,3/7,3/8,3/9 ...
+ 0/0,0/1,0/2,0/3,0/4,0/5,0/6,0/7,0/8,0/9 .
+ 1/0,1/1,1/2,1/3,1/4,1/5,1/6,1/7,1/8,1/9 ...
+ 2/0,2/1,2/2,2/3,2/4,2/5,2/6,2/7,2/8,2/9 ...
+ 3/0,3/1,3/2,3/3,3/4,3/5,3/6,3/7,3/8,3/9 ...
  ...
 
  */
@@ -129,12 +131,12 @@ public class GameService {
         Board board = new Board();
         board.setSizeBoard(9);
         newGame.setBoard(board); 
-        board.setGame(newGame);
+        //board.setGame(newGame);
 
         //set pawn
         Pawn pawn = new Pawn();
-        pawn.setR(1);
-        pawn.setC(9);
+        pawn.setR(0);
+        pawn.setC(8);
         pawn.setColor("red");
         pawn.setUser(userById);
         pawn.setBoard(board);
@@ -192,8 +194,8 @@ public class GameService {
         // create Pawn and add to board 
         Board board = gameById.getBoard();
         Pawn pawn = new Pawn();
-        pawn.setR(17);
-        pawn.setC(9);
+        pawn.setR(16);
+        pawn.setC(8);
         pawn.setColor("blue");
         pawn.setUser(userById);
         pawn.setBoard(board);

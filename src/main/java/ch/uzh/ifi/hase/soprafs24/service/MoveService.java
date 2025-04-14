@@ -92,18 +92,14 @@ public class MoveService {
         int startR = pawn.getR();
         int startC = pawn.getC();
 
-
-
         // Check if the target position is within the board boundaries
         if (!isValidPawnField(board, pawn, targetR, targetC)) {
             return false;
         }
 
         // Check if the target position is adjacent to the current position
-        if (!((Math.abs(targetR - startR) == 2 && 
-            Math.abs(targetC - startC) == 0) ||
-            (Math.abs(targetR - startR) == 0 && 
-            Math.abs(targetC - startC) == 2))) {
+        if (!((Math.abs(targetR - startR) == 2 && Math.abs(targetC - startC) == 0) ||
+            (Math.abs(targetR - startR) == 0 && Math.abs(targetC - startC) == 2))) {
             if (!isValidJumpMove(board, pawn, targetR, targetC, walls)) {
                 return false;
             }
