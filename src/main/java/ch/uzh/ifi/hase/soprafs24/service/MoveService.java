@@ -13,6 +13,11 @@ import ch.uzh.ifi.hase.soprafs24.entity.Wall;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+
 // This code is not finished at all, needs to be logically analysed again and tested
 /*  Assumptions for this code, maybe be changed later
 
@@ -29,48 +34,63 @@ Walls are assumed to be placed in the middle of their tracks
 
 @Service
 public class MoveService {
-    
+
+    private final Logger log = LoggerFactory.getLogger(MoveService.class);
+
     //checks if a field is reachable
     public boolean hasPathToGoal(Game game, Board board, Pawn pawn, List<Wall> walls) {
+        log.error("Checking path to goal for pawn at r={}, c={}", pawn.getR(), pawn.getC());
+        
         int boardSize = board.getSizeBoard();
         int startR = pawn.getR();
         int startC = pawn.getC();
         int goalR = getGoalRow(game, board, pawn);
-
+        
+        log.error("Goal row: {}", goalR);
+        
         boolean[][] visited = new boolean[boardSize][boardSize];
         Queue<int[]> queue = new LinkedList<>();
         queue.add(new int[]{startR, startC});
         visited[startR][startC] = true;
-
+    
         while (!queue.isEmpty()) {
             int[] current = queue.poll();
             int r = current[0];
             int c = current[1];
-
+    
+            log.error("Checking position r={}, c={}", r, c);
+            
             // Winning Condition
             if (r == goalR) {
+                log.error("Found path to goal!");
                 return true;
             }
-
+    
             // Check all possible moves
-            int[][] directions = {{0, 2}, {0, -2}, {2, 0}, {-2, 0} };
+            int[][] directions = {{0, 2}, {0, -2}, {2, 0}, {-2, 0}};
             for (int[] dir : directions) {  
                 int newR = r + dir[0];
                 int newC = c + dir[1];
-
+    
                 if (newR >= 0 && newR < boardSize &&
                     newC >= 0 && newC < boardSize) {
                     
-                    if (isValidPawnMove(board, pawn, newR, newC, walls) && 
-                        !visited[newR][newC]) {
+                    boolean validMove = isValidPawnMove(board, pawn, newR, newC, walls);
+                    log.error("Move to r={}, c={} is {}", newR, newC, (validMove ? "valid" : "invalid"));
+                    
+                    if (validMove && !visited[newR][newC]) {
+                        log.error("Adding to queue: r={}, c={}", newR, newC);
                         visited[newR][newC] = true;
                         queue.add(new int[]{newR, newC});
                     }
                 }
             }
         }
+        
+        log.error("No path found to goal!");
         return false;
     }
+    
 
 
 
@@ -100,9 +120,9 @@ public class MoveService {
         // Check if the target position is adjacent to the current position
         if (!((Math.abs(targetR - startR) == 2 && Math.abs(targetC - startC) == 0) ||
             (Math.abs(targetR - startR) == 0 && Math.abs(targetC - startC) == 2))) {
-            if (!isValidJumpMove(board, pawn, targetR, targetC, walls)) {
+            // if (!isValidJumpMove(board, pawn, targetR, targetC, walls)) {
                 return false;
-            }
+            //}
         }
 
         // Check if the target position is occupied by another pawn
@@ -144,7 +164,7 @@ public class MoveService {
         if (startR == targetR && startC + 2 == targetC) {
             for (Wall wall : walls) {
                 if (wall.getOrientation() == WallOrientation.VERTICAL && 
-                    Math.abs(startR - wall.getR()) <=1 && wall.getC() == startC + 1) {
+                    Math.abs(startR - wall.getR()) <= 1 && wall.getC() == startC + 1) {
                     return true;
                 }
             }
@@ -188,10 +208,6 @@ public class MoveService {
         tempWall.setR(r);
         tempWall.setC(c);
         tempWall.setOrientation(orientation);
-
-        if (!isValidWallField(board, tempWall)) {
-            return true; // Invalid wall position
-        }
         
         //Creates temp list and checks if it works with new wall
         List<Wall> wallsWithNew = new ArrayList<>(existingWalls);
@@ -207,86 +223,86 @@ public class MoveService {
     }
 
 
-    // Checks if a jump move is valid
-    private boolean isValidJumpMove(Board board, Pawn pawn, int targetR, int targetC, List<Wall> walls) {
-        int startR = pawn.getR();
-        int startC = pawn.getC();
+    // // Checks if a jump move is valid
+    // private boolean isValidJumpMove(Board board, Pawn pawn, int targetR, int targetC, List<Wall> walls) {
+    //     int startR = pawn.getR();
+    //     int startC = pawn.getC();
         
-        // First, check if there's a pawn adjacent to the current pawn
-        Pawn adjacentPawn = null; // For scope
+    //     // First, check if there's a pawn adjacent to the current pawn
+    //     Pawn adjacentPawn = null; // For scope
         
-        // Possible adjacent positions: up, down, left, right
-        int[][] adjacentDirections = {{-2, 0}, {2, 0}, {0, -2}, {0, 2}};
-        for (int[] dir : adjacentDirections) {
-            int adjR = startR + dir[0];
-            int adjC = startC + dir[1];
+    //     // Possible adjacent positions: up, down, left, right
+    //     int[][] adjacentDirections = {{-2, 0}, {2, 0}, {0, -2}, {0, 2}};
+    //     for (int[] dir : adjacentDirections) {
+    //         int adjR = startR + dir[0];
+    //         int adjC = startC + dir[1];
             
-            // Check if position is within board and contains a pawn
-            if (adjR >= 0 && adjR < board.getSizeBoard() &&
-                adjC >= 0 && adjC < board.getSizeBoard()) {
-                for (Pawn otherPawn : board.getPawns()) {
-                    if (otherPawn.getR() == adjR && otherPawn.getC() == adjC) {
-                        adjacentPawn = otherPawn;
+    //         // Check if position is within board and contains a pawn
+    //         if (adjR >= 0 && adjR < board.getSizeBoard() &&
+    //             adjC >= 0 && adjC < board.getSizeBoard()) {
+    //             for (Pawn otherPawn : board.getPawns()) {
+    //                 if (otherPawn.getR() == adjR && otherPawn.getC() == adjC) {
+    //                     adjacentPawn = otherPawn;
                         
-                        // Check if the jump would be in the direction of this adjacent pawn
-                        int jumpR = adjR + dir[0];
-                        int jumpC = adjC + dir[1];
+    //                     // Check if the jump would be in the direction of this adjacent pawn
+    //                     int jumpR = adjR + dir[0];
+    //                     int jumpC = adjC + dir[1];
                         
-                        // If the jump target matches our target position
-                        if (jumpR == targetR && jumpC == targetC) {
-                            // Check if there's a wall blocking the jump
-                            if (isWallBlockingPath(adjR, adjC, jumpR, jumpC, walls)) {
-                                // If jump is blocked by wall, check if diagonal moves are possible
-                                return isValidDiagonalJump(board, pawn, adjR, adjC, walls);
-                            }
-                            return true; // Valid jump move
-                        }
-                    }
-                }
-            }
-        }
+    //                     // If the jump target matches our target position
+    //                     if (jumpR == targetR && jumpC == targetC) {
+    //                         // Check if there's a wall blocking the jump
+    //                         if (isWallBlockingPath(adjR, adjC, jumpR, jumpC, walls)) {
+    //                             // If jump is blocked by wall, check if diagonal moves are possible
+    //                             return isValidDiagonalJump(board, pawn, adjR, adjC, walls);
+    //                         }
+    //                         return true; // Valid jump move
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }
         
-        return false;
-    }
+    //     return false;
+    // }
     
-    private boolean isValidDiagonalJump(Board board, Pawn pawn, int adjR, int adjC, List<Wall> walls) {
-        int startR = pawn.getR();
-        int startC = pawn.getC();
+    // private boolean isValidDiagonalJump(Board board, Pawn pawn, int adjR, int adjC, List<Wall> walls) {
+    //     int startR = pawn.getR();
+    //     int startC = pawn.getC();
         
-        // Calculate the direction from start to adjacent pawn
-        int dirR = adjR - startR;
-        int dirC = adjC - startC;
+    //     // Calculate the direction from start to adjacent pawn
+    //     int dirR = adjR - startR;
+    //     int dirC = adjC - startC;
         
-        // Possible diagonal directions based on the adjacent pawn position
-        int[][] diagonalOptions = {
-            {dirR, dirC + 2},  // Diagonal right from direction
-            {dirR, dirC - 2},  // Diagonal left from direction
-            {dirR + 2, dirC},  // Diagonal down from direction
-            {dirR - 2, dirC}   // Diagonal up from direction
-        };
+    //     // Possible diagonal directions based on the adjacent pawn position
+    //     int[][] diagonalOptions = {
+    //         {dirR, dirC + 2},  // Diagonal right from direction
+    //         {dirR, dirC - 2},  // Diagonal left from direction
+    //         {dirR + 2, dirC},  // Diagonal down from direction
+    //         {dirR - 2, dirC}   // Diagonal up from direction
+    //     };
         
-        for (int[] diag : diagonalOptions) {
-            int diagR = startR + diag[0];
-            int diagC = startC + diag[1];
+    //     for (int[] diag : diagonalOptions) {
+    //         int diagR = startR + diag[0];
+    //         int diagC = startC + diag[1];
             
-            // Check if diagonal position is within board and not occupied
-            if (diagR >= 0 && diagR < board.getSizeBoard() && diagC >= 0 && diagC < board.getSizeBoard()) {
-                boolean isOccupied = false;
-                for (Pawn otherPawn : board.getPawns()) {
-                    if (otherPawn.getR() == diagR && otherPawn.getC() == diagC) {
-                        isOccupied = true;
-                        break;
-                    }
-                }
+    //         // Check if diagonal position is within board and not occupied
+    //         if (diagR >= 0 && diagR < board.getSizeBoard() && diagC >= 0 && diagC < board.getSizeBoard()) {
+    //             boolean isOccupied = false;
+    //             for (Pawn otherPawn : board.getPawns()) {
+    //                 if (otherPawn.getR() == diagR && otherPawn.getC() == diagC) {
+    //                     isOccupied = true;
+    //                     break;
+    //                 }
+    //             }
                 
-                if (!isOccupied && !isWallBlockingPath(startR, startC, diagR, diagC, walls)) {
-                    return true; // Valid diagonal jump
-                }
-            }
-        }
+    //             if (!isOccupied && !isWallBlockingPath(startR, startC, diagR, diagC, walls)) {
+    //                 return true; // Valid diagonal jump
+    //             }
+    //         }
+    //     }
         
-        return false; // No valid diagonal jump found
-    }
+    //     return false; // No valid diagonal jump found
+    // }
 
     //Check if pawn field
     public boolean isValidPawnField(Board board, Pawn pawn, int targetR, int targetC) {
@@ -304,15 +320,15 @@ public class MoveService {
     }
 
     //Check if wall field
-    public boolean isValidWallField(Board board, Wall wall) {
+    public boolean isValidWallField(Board board, int r, int c) {
         // Check if the target position is within the board boundaries
-        if (wall.getR() < 0 || wall.getR() >= board.getSizeBoard() ||
-            wall.getC() < 0 || wall.getC() >= board.getSizeBoard()) {
+        if (r < 0 || r >= board.getSizeBoard() ||
+            c < 0 || c >= board.getSizeBoard()) {
             return false;
         }
 
         //Check if odd field
-        if (wall.getR() % 2 == 0 || wall.getC() % 2 == 0) {
+        if ( r % 2 == 0 || c % 2 == 0) {
             return false;
         }
         return true;

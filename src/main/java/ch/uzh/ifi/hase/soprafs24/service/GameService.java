@@ -324,6 +324,10 @@ public class GameService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Cannot place wall. User has no walls left.");
         }
 
+        if (!moveService.isValidWallField(board, r, c)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid wall position: wall overlaps with existing wall");
+        }
+
 
         String turnErrorMessage = "Not users turn!"; // check if it is actually current users turn 
         if (!currentUser.getId().equals(user.getId())) {
