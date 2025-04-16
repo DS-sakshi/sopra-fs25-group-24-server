@@ -260,7 +260,6 @@ public class GameControllerTest {
         MovePostDTO moveDTO = new MovePostDTO();
         moveDTO.setType(MoveType.MOVE_PAWN);
         moveDTO.setEndPosition(List.of(2, 3));
-        moveDTO.setStartPosition(List.of(2, 3));
 
         mockMvc.perform(post("/game-lobby/1/move")
            .contentType(MediaType.APPLICATION_JSON)

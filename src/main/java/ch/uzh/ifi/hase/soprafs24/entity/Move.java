@@ -9,9 +9,6 @@ import java.util.List;
 public class Move {
 
     @ElementCollection
-    private List<Integer> startPosition;
-
-    @ElementCollection
     private List<Integer> endPosition;
 
     @ElementCollection
@@ -23,15 +20,6 @@ public class Move {
     private MoveType type;
 
     private User user;
-
-    
-    public List<Integer> getStartPosition() {
-        return startPosition;
-    }
-
-    public void setStartPosition(List<Integer> startPosition) {
-        this.startPosition = startPosition;
-    }
 
     public List<Integer> getEndPosition() {
         return endPosition;

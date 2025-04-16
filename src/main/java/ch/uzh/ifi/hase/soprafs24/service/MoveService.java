@@ -119,9 +119,9 @@ public class MoveService {
             
         }
 
-        if (!isValidJumpMove(board, pawn, targetR, targetC, walls)) {
-            return false;
-        }
+        // if (!isValidJumpMove(board, pawn, targetR, targetC, walls)) {
+        //     return false;
+        // }
         return true;
         }
 
@@ -182,6 +182,7 @@ public class MoveService {
 
     // Maybe will put this one in the GameService later
     // Check if a wall would block all paths for at least one player
+    // this results in walls beign unable to be placed for uneven numbers 
     public boolean wouldBlockAllPaths(Game game, Board board, List<Wall> existingWalls, int r, int c, WallOrientation orientation) {
         Wall tempWall = new Wall(); // Creates a temporary wall and adds it to the list of walls
         tempWall.setR(r);
@@ -189,7 +190,7 @@ public class MoveService {
         tempWall.setOrientation(orientation);
 
         if (!isValidWallField(board, tempWall)) {
-            return false; // Invalid wall position
+            return true; // Invalid wall position
         }
         
         //Creates temp list and checks if it works with new wall

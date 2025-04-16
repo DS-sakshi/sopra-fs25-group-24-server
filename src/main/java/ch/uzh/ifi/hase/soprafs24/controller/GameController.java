@@ -9,6 +9,7 @@ import ch.uzh.ifi.hase.soprafs24.rest.dto.MovePostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GameGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.GameStatusDTO;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
 import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
 import org.slf4j.Logger;
@@ -88,11 +89,12 @@ public class GameController {
     @PostMapping("/game-lobby/{gameId}/move")
     @ResponseStatus(HttpStatus.CREATED)
     @ResponseBody
-    public void handleMove(@PathVariable Long gameId, @RequestBody MovePostDTO movePostDTO) {
+    public GameStatusDTO handleMove(@PathVariable Long gameId, @RequestBody MovePostDTO movePostDTO) {
 
     Move move =  DTOMapper.INSTANCE.convertMovePostDTOtoEntity(movePostDTO);
+    Game game; 
     if (move.getType() == MoveType.MOVE_PAWN) { 
-        gameService.movePawn(gameId, move);
+        game = gameService.movePawn(gameId, move);
 
     } else if (move.getType() == MoveType.ADD_WALL) {
 
@@ -112,8 +114,14 @@ public class GameController {
         int c = wallPosition.get(1);
         WallOrientation orientation = move.getWallOrientation();
 
-        gameService.placeWall(gameId, user, r, c, orientation);
-    }}
+        game = gameService.placeWall(gameId, user, r, c, orientation);
+    } else {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid move type");
+    }
+        
+    return DTOMapper.INSTANCE.convertEntityToGameStatusDTO(game);
+    
+    }
 
     @DeleteMapping("/game-lobby/{gameId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)

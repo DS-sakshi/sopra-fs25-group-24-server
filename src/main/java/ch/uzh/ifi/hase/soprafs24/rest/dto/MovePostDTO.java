@@ -8,20 +8,11 @@ import java.util.List;
 
 public class MovePostDTO {
 
-    private List<Integer> startPosition;
     private List<Integer> endPosition;
     private User user;
     private MoveType type;
     private List<Integer> wallPosition;
     private String wallOrientation;
-
-    public List<Integer> getStartPosition() {
-        return startPosition;
-    }
-
-    public void setStartPosition(List<Integer> startPosition) {
-        this.startPosition = startPosition;
-    }
 
     public List<Integer> getEndPosition() {
         return endPosition;
