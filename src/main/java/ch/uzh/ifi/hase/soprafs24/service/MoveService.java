@@ -75,7 +75,7 @@ public class MoveService {
                 if (newR >= 0 && newR < boardSize &&
                     newC >= 0 && newC < boardSize) {
                     
-                    if (isValidPawnMove(board, pawn, newR, newC, walls) && 
+                    if (isValidPawnMoveHasPath(board, pawn, newR, newC, r, c,walls) && 
                         !visited[newR][newC]) {
                         visited[newR][newC] = true;
                         queue.add(new int[]{newR, newC});
@@ -101,6 +101,34 @@ public class MoveService {
         }
     }
 
+        // Validate move
+public boolean isValidPawnMoveHasPath(Board board, Pawn pawn, int targetR, int targetC, int startR , int startC, List<Wall> walls) {
+    
+        // Check if the target position is within the board boundaries
+            if (!isValidPawnField(board, pawn, targetR, targetC)) {
+                return false;
+            }
+    
+            // Check if the target position is adjacent to the current position
+            if (!((Math.abs(targetR - startR) == 2 && Math.abs(targetC - startC) == 0) ||
+                (Math.abs(targetR - startR) == 0 && Math.abs(targetC - startC) == 2))) {
+                // if (!isValidJumpMove(board, pawn, targetR, targetC, walls)) {
+                //     return false;
+                // }
+                return false;
+            }
+            // Check if the target position is blocked by walls
+            if (isWallBlockingPath(startR, startC, targetR, targetC, walls)) {
+                return false;
+                
+            }
+    
+            // if (!isValidJumpMove(board, pawn, targetR, targetC, walls)) {
+            //     return false;
+            // }
+            return true;
+            }
+
 
     // Validate move
     public boolean isValidPawnMove(Board board, Pawn pawn, int targetR, int targetC, List<Wall> walls) {
@@ -115,9 +143,10 @@ public class MoveService {
         // Check if the target position is adjacent to the current position
         if (!((Math.abs(targetR - startR) == 2 && Math.abs(targetC - startC) == 0) ||
             (Math.abs(targetR - startR) == 0 && Math.abs(targetC - startC) == 2))) {
-            if (!isValidJumpMove(board, pawn, targetR, targetC, walls)) {
-                return false;
-            }
+            // if (!isValidJumpMove(board, pawn, targetR, targetC, walls)) {
+            //     return false;
+            // }
+            return false;
         }
 
         // Check if the target position is occupied by another pawn
