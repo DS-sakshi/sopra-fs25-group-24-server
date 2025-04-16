@@ -75,11 +75,8 @@ public class MoveService {
                 if (newR >= 0 && newR < boardSize &&
                     newC >= 0 && newC < boardSize) {
                     
-                    boolean validMove = isValidPawnMove(board, pawn, newR, newC, walls);
-                    log.error("Move to r={}, c={} is {}", newR, newC, (validMove ? "valid" : "invalid"));
-                    
-                    if (validMove && !visited[newR][newC]) {
-                        log.error("Adding to queue: r={}, c={}", newR, newC);
+                    if (isValidPawnMove(board, pawn, newR, newC, walls) && 
+                        !visited[newR][newC]) {
                         visited[newR][newC] = true;
                         queue.add(new int[]{newR, newC});
                     }
@@ -90,7 +87,6 @@ public class MoveService {
         log.error("No path found to goal!");
         return false;
     }
-    
 
 
 
@@ -104,7 +100,6 @@ public class MoveService {
             return 0;
         }
     }
- 
 
 
     // Validate move
@@ -120,9 +115,9 @@ public class MoveService {
         // Check if the target position is adjacent to the current position
         if (!((Math.abs(targetR - startR) == 2 && Math.abs(targetC - startC) == 0) ||
             (Math.abs(targetR - startR) == 0 && Math.abs(targetC - startC) == 2))) {
-            // if (!isValidJumpMove(board, pawn, targetR, targetC, walls)) {
+            if (!isValidJumpMove(board, pawn, targetR, targetC, walls)) {
                 return false;
-            //}
+            }
         }
 
         // Check if the target position is occupied by another pawn
