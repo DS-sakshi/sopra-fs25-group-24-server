@@ -79,7 +79,7 @@ public class MoveServiceTest {
         // Create test board
         testBoard = new Board();
         testBoard.setId(1L);
-        testBoard.setSizeBoard(17); // 9x9 game board represented as 17x17 including wall positions
+        testBoard.setSizeBoard(9); 
 
         // Create test pawn
         testPawn1 = new Pawn();
