@@ -1,4 +1,4 @@
-/* package ch.uzh.ifi.hase.soprafs24.service;
+package ch.uzh.ifi.hase.soprafs24.service;
 
 import ch.uzh.ifi.hase.soprafs24.constant.GameStatus;
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
@@ -45,17 +45,16 @@ public class MoveServiceTest {
     @Mock
     private WallRepository wallRepository;
 
-    @Mock
-    private MoveService moveService;
-
     @InjectMocks
-    private GameService gameService;
+    private MoveService moveService;
 
     private User testUser;
     private User testUser2;
     private Game testGame;
     private Board testBoard;
-    private Pawn testPawn;
+    private Pawn testPawn1;
+    private Pawn testPawn2;
+    private List<Wall> testWalls;
 
     @BeforeEach
     public void setup() {
@@ -80,19 +79,34 @@ public class MoveServiceTest {
         // Create test board
         testBoard = new Board();
         testBoard.setId(1L);
-        testBoard.setSizeBoard(9);
-        testBoard.setPawns(new ArrayList<>());
-        testBoard.setWalls(new ArrayList<>());
+        testBoard.setSizeBoard(17); // 9x9 game board represented as 17x17 including wall positions
 
         // Create test pawn
-        testPawn = new Pawn();
-        testPawn.setId(1L);
-        testPawn.setR(1);
-        testPawn.setC(9);
-        testPawn.setColor("red");
-        testPawn.setUser(testUser);
-        testPawn.setBoard(testBoard);
-        testBoard.getPawns().add(testPawn);
+        testPawn1 = new Pawn();
+        testPawn1.setId(1L);
+        testPawn1.setR(0);
+        testPawn1.setC(8);
+        testPawn1.setColor("red");
+        testPawn1.setUser(testUser);
+        testPawn1.setBoard(testBoard);
+
+        // Create second test pawn
+        testPawn2 = new Pawn();
+        testPawn2.setId(2L);
+        testPawn2.setR(16);
+        testPawn2.setC(8);
+        testPawn2.setColor("blue");
+        testPawn2.setUser(testUser2);
+        testPawn2.setBoard(testBoard);
+
+        List<Pawn> pawns = new ArrayList<>();
+        pawns.add(testPawn1);
+        pawns.add(testPawn2);
+        testBoard.setPawns(pawns);
+
+        // Create test walls list
+        testWalls = new ArrayList<>();
+        testBoard.setWalls(testWalls);
 
         // Create test game
         testGame = new Game();
@@ -101,83 +115,228 @@ public class MoveServiceTest {
         testGame.setSizeBoard(9);
         testGame.setCreator(testUser);
         testGame.setCurrentTurn(testUser);
-        testGame.setGameStatus(GameStatus.WAITING_FOR_USER);
+        testGame.setGameStatus(GameStatus.RUNNING);
         Set<User> userList = new HashSet<>();
+        userList.add(testUser2);
         userList.add(testUser);
         testGame.setCurrentUsers(userList);
         testGame.setBoard(testBoard);
-
-        // Configure mocks
-        when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
-        when(userRepository.findById(2L)).thenReturn(Optional.of(testUser2));
-
-        // Fix for the error: use orElse pattern instead of Optional
-        when(gameRepository.findById(any(Long.class))).thenReturn(Optional.of(testGame));
-        when(gameRepository.save(any(Game.class))).thenReturn(testGame);
-        when(boardRepository.save(any(Board.class))).thenReturn(testBoard);
-        when(pawnRepository.save(any(Pawn.class))).thenReturn(testPawn);
-
-        // for the MoveService mock
-        when(moveService.isValidPawnMove(any(), any(), anyInt(), anyInt(), any())).thenReturn(true);
-        when(moveService.getGoalRow(any(), any(), any())).thenReturn(17);  // Return a goal row that won't trigger win condition
-        when(moveService.wouldBlockAllPaths(any(), any(), any(), anyInt(), anyInt(), any())).thenReturn(false);
-    
     }
 
     @Test
-    public void testMovePawn_validMove() {
-        // given
-        int newRow = 2;
-        int newCol = 8;
+    public void hasPathToGoal_noWalls_returnsTrue() {
+        // Test that both players have a path to their goals when no walls are present
+        assertTrue(moveService.hasPathToGoal(testGame, testBoard, testPawn1, testWalls));
+        assertTrue(moveService.hasPathToGoal(testGame, testBoard, testPawn2, testWalls));
+    }
 
-        // when
-        Move move = moveService.movePawn(testGame, testUser, testPawn, newRow, newCol);
+ /*    @Test
+    public void hasPathToGoal_withWalls_returnsTrue() {
+        // given
+        Wall wall = new Wall();
+        wall.setOrientation(WallOrientation.HORIZONTAL);
+        wall.setR(5);
+        wall.setC(5);
+        testWalls.add(wall);
 
         // then
-        assertNotNull(move);
-        assertEquals(testPawn.getId(), move.getPawn().getId());
-        assertEquals(newRow, move.getNewRow());
-        assertEquals(newCol, move.getNewCol());
-
-        // Verify that the pawn's position has been updated
-        assertEquals(newRow, testPawn.getR());
-        assertEquals(newCol, testPawn.getC());
+        assertTrue(moveService.hasPathToGoal(testGame, testBoard, testPawn1, testWalls));
+        assertTrue(moveService.hasPathToGoal(testGame, testBoard, testPawn2, testWalls));
     }
 
     @Test
-    public void testMovePawn_invalidMove() {
+    public void hasPathToGoal_noPath_WallsBlocking_returnsFalse() {
+        // Create a horizontal wall barrier across the entire board 
+        for (int c = 1; c <= 15; c += 2) {
+            Wall wall = new Wall();
+            wall.setOrientation(WallOrientation.HORIZONTAL);
+            wall.setR(5);
+            wall.setC(c);
+            testWalls.add(wall);
+        }
+
+        // At least one player should not have a path to goal
+        boolean player1HasPath = moveService.hasPathToGoal(testGame, testBoard, testPawn1, testWalls);
+        boolean player2HasPath = moveService.hasPathToGoal(testGame, testBoard, testPawn2, testWalls);
+        
+        // Either player1 or player2 (or both) should not have a path
+        assertFalse(player1HasPath && player2HasPath);
+    }
+
+    @Test
+    public void getGoalRow_validPawn_returnsCorrectRow() {
         // given
-        int invalidRow = 10;  // Out of bounds
-        int invalidCol = 10;  // Out of bounds
+        int expectedRow = testBoard.getSizeBoard() - 1; // 16 for a 17x17 board
 
-        // when & then
-        assertThrows(ResponseStatusException.class, () -> {
-            moveService.movePawn(testGame, testUser, testPawn, invalidRow, invalidCol);
-        });
+        // when
+        int goalRow = moveService.getGoalRow(testGame, testBoard, testPawn1);
 
-        // Verify that the pawn's position has not changed
-        assertEquals(1, testPawn.getR());
-        assertEquals(9, testPawn.getC());
+        // then
+        assertEquals(expectedRow, goalRow);
     }
 
     @Test
-    public void testMovePawn_blockingMove() {
+    public void getGoalRow_forSecondPlayer() {
         // given
-        int blockingRow = 2;
-        int blockingCol = 8;
+        int expectedRow = 0;
 
-        // when & then
-        assertThrows(ResponseStatusException.class, () -> {
-            moveService.movePawn(testGame, testUser, testPawn, blockingRow, blockingCol);
-        });
+        // when
+        int goalRow = moveService.getGoalRow(testGame, testBoard, testPawn2);
 
-        // Verify that the pawn's position has not changed
-        assertEquals(1, testPawn.getR());
-        assertEquals(9, testPawn.getC());
+        // then
+        assertEquals(expectedRow, goalRow);
     }
 
     @Test
+    public void isValidPawnMove_toAdjacentCell() {
+        // Move right
+        assertTrue(moveService.isValidPawnMove(testBoard, testPawn1, 0, 10, testWalls));
+        
+        // Move down
+        assertTrue(moveService.isValidPawnMove(testBoard, testPawn1, 2, 8, testWalls));
+    }
 
+    @Test
+    public void isValidPawnMove_toNonAdjacentSquare_returnsFalse() {
+        // Try to move diagonally
+        assertFalse(moveService.isValidPawnMove(testBoard, testPawn1, 2, 10, testWalls));
+        
+        // Try to move two squares away
+        assertFalse(moveService.isValidPawnMove(testBoard, testPawn1, 4, 8, testWalls));
+    }
 
-}
- */
+    @Test
+    public void isValidPawnMove_toOccupiedSquare_returnsFalse() {
+        // Place pawn2 adjacent to pawn1
+        testPawn2.setR(2);
+        testPawn2.setC(8);
+        
+        // Try to move to the occupied square
+        assertFalse(moveService.isValidPawnMove(testBoard, testPawn1, 2, 8, testWalls));
+    }
+
+    @Test
+    public void isValidPawnMove_outOfBounds_returnsFalse() {
+        // Move out of bounds
+        assertFalse(moveService.isValidPawnMove(testBoard, testPawn1, -2, 8, testWalls));
+        assertFalse(moveService.isValidPawnMove(testBoard, testPawn1, testBoard.getSizeBoard() + 2, 8, testWalls));
+        assertFalse(moveService.isValidPawnMove(testBoard, testPawn1, 0, -2, testWalls));
+        assertFalse(moveService.isValidPawnMove(testBoard, testPawn1, 0, testBoard.getSizeBoard() + 2, testWalls));
+    }
+
+    @Test
+    public void isValidPawnMove_blockedByWall_returnsFalse() {
+        // Add a wall blocking the move down
+        Wall wall = new Wall();
+        wall.setR(1);
+        wall.setC(8);
+        wall.setOrientation(WallOrientation.HORIZONTAL);
+        testWalls.add(wall);
+        
+        // Try to move through the wall (down)
+        assertFalse(moveService.isValidPawnMove(testBoard, testPawn1, 2, 8, testWalls));
+    }
+
+    @Test
+    public void isWallBlockingPath_horizontalWall_blocksVerticalMovement() {
+        // Create horizontal wall
+        Wall horizontalWall = new Wall();
+        horizontalWall.setR(1);
+        horizontalWall.setC(8);
+        horizontalWall.setOrientation(WallOrientation.HORIZONTAL);
+        testWalls.add(horizontalWall);
+        
+        // Vertical movement (down) should be blocked
+        assertFalse(moveService.isValidPawnMove(testBoard, testPawn1, 2, 8, testWalls));
+        
+        // But horizontal movement should still be possible
+        assertTrue(moveService.isValidPawnMove(testBoard, testPawn1, 0, 10, testWalls));
+    }
+
+    @Test
+    public void isWallBlockingPath_verticalWall_blocksHorizontalMovement() {
+        // Create vertical wall
+        Wall verticalWall = new Wall();
+        verticalWall.setR(0);
+        verticalWall.setC(9);
+        verticalWall.setOrientation(WallOrientation.VERTICAL);
+        testWalls.add(verticalWall);
+        
+        // Horizontal movement (right) should be blocked
+        assertFalse(moveService.isValidPawnMove(testBoard, testPawn1, 0, 10, testWalls));
+        
+        // But vertical movement should still be possible
+        assertTrue(moveService.isValidPawnMove(testBoard, testPawn1, 2, 8, testWalls));
+    }
+
+    @Test
+    public void wouldBlockAllPaths_blockingWall_returnsTrue() {
+        // Create a nearly complete barrier with some walls
+        Wall wall1 = new Wall();
+        wall1.setR(15);
+        wall1.setC(6);
+        wall1.setOrientation(WallOrientation.HORIZONTAL);
+        testWalls.add(wall1);
+
+        Wall wall2 = new Wall();
+        wall2.setR(15);
+        wall2.setC(8);
+        wall2.setOrientation(WallOrientation.HORIZONTAL);
+        testWalls.add(wall2);
+
+        Wall wall3 = new Wall();
+        wall3.setR(15);
+        wall3.setC(10);
+        wall3.setOrientation(WallOrientation.HORIZONTAL);
+        testWalls.add(wall3);
+
+        // This wall would block the last remaining path
+        boolean result = moveService.wouldBlockAllPaths(testGame, testBoard, testWalls, 13, 8, WallOrientation.HORIZONTAL);
+        assertTrue(result);
+    }
+
+    @Test
+    public void wouldBlockAllPaths_nonBlockingWall_returnsFalse() {
+        // Check that a wall which doesn't block all paths returns false
+        boolean result = moveService.wouldBlockAllPaths(testGame, testBoard, testWalls, 7, 8, WallOrientation.HORIZONTAL);
+        assertFalse(result);
+    }
+
+    @Test
+    public void isValidPawnField_withValidField_returnsTrue() {
+        // Test with even coordinates (valid pawn positions)
+        assertTrue(moveService.isValidPawnField(testBoard, testPawn1, 0, 0));
+        assertTrue(moveService.isValidPawnField(testBoard, testPawn1, 2, 4));
+        assertTrue(moveService.isValidPawnField(testBoard, testPawn1, 16, 16));
+    }
+
+    @Test
+    public void isValidPawnField_withInvalidField_returnsFalse() {
+        // Test with odd coordinates (wall positions)
+        assertFalse(moveService.isValidPawnField(testBoard, testPawn1, 1, 1));
+        assertFalse(moveService.isValidPawnField(testBoard, testPawn1, 5, 4));
+        
+        // Test with out of bounds coordinates
+        assertFalse(moveService.isValidPawnField(testBoard, testPawn1, -2, 4));
+        assertFalse(moveService.isValidPawnField(testBoard, testPawn1, 18, 4));
+    }
+
+    @Test
+    public void isValidWallField_withValidField_returnsTrue() {
+        // Test with odd coordinates (valid wall positions)
+        assertTrue(moveService.isValidWallField(testBoard, 1, 1));
+        assertTrue(moveService.isValidWallField(testBoard, 3, 7));
+        assertTrue(moveService.isValidWallField(testBoard, 15, 15));
+    }
+
+    @Test
+    public void isValidWallField_withInvalidField_returnsFalse() {
+        // Test with even coordinates (pawn positions)
+        assertFalse(moveService.isValidWallField(testBoard, 0, 0));
+        assertFalse(moveService.isValidWallField(testBoard, 2, 7));
+        
+        // Test with out of bounds coordinates
+        assertFalse(moveService.isValidWallField(testBoard, -1, 3));
+        assertFalse(moveService.isValidWallField(testBoard, 17, 3));
+    }*/
+} 

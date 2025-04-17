@@ -72,14 +72,17 @@ public class MoveService {
                 int newR = r + dir[0];
                 int newC = c + dir[1];
     
-                if (newR >= 0 && newR < boardSize &&
-                    newC >= 0 && newC < boardSize) {
+                if (((newR >= 0) && (newR < boardSize)) &&
+                    ((newC >= 0) && (newC < boardSize))) {
                     
                     if (isValidPawnMoveHasPath(board, pawn, newR, newC, r, c,walls) && 
                         !visited[newR][newC]) {
                         visited[newR][newC] = true;
                         queue.add(new int[]{newR, newC});
-                    }
+                    } 
+                } else {
+                    log.error("Position out of bounds: r={}, c={}", newR, newC);
+                    continue;
                 }
             }
         }
