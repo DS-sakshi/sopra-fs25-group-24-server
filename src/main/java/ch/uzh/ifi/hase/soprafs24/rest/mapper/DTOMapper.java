@@ -1,12 +1,14 @@
 package ch.uzh.ifi.hase.soprafs24.rest.mapper;
 
 import ch.uzh.ifi.hase.soprafs24.entity.User;
+import ch.uzh.ifi.hase.soprafs24.constant.GameStatus;
 import ch.uzh.ifi.hase.soprafs24.entity.Game;
 import ch.uzh.ifi.hase.soprafs24.entity.Move;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GameGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.GameStatusDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.MovePostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPutDTO;
 import org.mapstruct.*;
@@ -43,7 +45,6 @@ public interface DTOMapper {
     @Mapping(source = "token", target = "token")
     User convertUserPostGETtoEntity(UserGetDTO UserGetDTO);
 
-    @Mapping(source = "startPosition", target = "startPosition")
     @Mapping(source = "endPosition", target = "endPosition")
     @Mapping(source = "user", target = "user")
     @Mapping(source = "type", target = "type")
@@ -81,5 +82,7 @@ public interface DTOMapper {
     @Mapping(source = "currentUsers", target = "currentUsers")
     @Mapping(source = "gameStatus", target = "gameStatus")
     GameGetDTO convertEntityToGameGetDTO(Game game);
-    
+
+    @Mapping(source = "gameStatus", target = "gameStatus")
+    GameStatusDTO convertEntityToGameStatusDTO(Game game);
 }

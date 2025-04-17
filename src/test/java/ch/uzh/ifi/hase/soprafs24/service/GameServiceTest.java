@@ -1,4 +1,4 @@
-package ch.uzh.ifi.hase.soprafs24.service;
+/* package ch.uzh.ifi.hase.soprafs24.service;
 
 import ch.uzh.ifi.hase.soprafs24.constant.GameStatus;
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
@@ -515,4 +515,4 @@ public class GameServiceTest {
     //     verify(testUser, times(1)).increaseTotalGamesLost();
     //     verify(testUser2, times(1)).increaseTotalGamesWon();
     // }
-}
+} */

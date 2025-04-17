@@ -88,7 +88,6 @@ public class DTOMapperTest {
   public void testCreateMove_fromMovePostDTO_toMove_success() {
     // create MovePostDTO
     MovePostDTO movePostDTO = new MovePostDTO();
-    movePostDTO.setStartPosition(Arrays.asList(0, 1));
     movePostDTO.setEndPosition(Arrays.asList(0, 2));
     movePostDTO.setType(MoveType.MOVE_PAWN);
     movePostDTO.setWallPosition(Arrays.asList(1, 3));
@@ -103,7 +102,6 @@ public class DTOMapperTest {
     Move move = DTOMapper.INSTANCE.convertMovePostDTOtoEntity(movePostDTO);
 
     // check content
-    assertEquals(movePostDTO.getStartPosition(), move.getStartPosition());
     assertEquals(movePostDTO.getEndPosition(), move.getEndPosition());
     assertEquals(movePostDTO.getType(), move.getType());
     assertEquals(movePostDTO.getWallPosition(), move.getWallPosition());

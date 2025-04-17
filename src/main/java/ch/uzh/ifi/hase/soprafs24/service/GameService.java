@@ -220,7 +220,7 @@ public class GameService {
     }
 
     // Move Pawn.
-    public void movePawn(Long gameId, Move move) {
+    public Game movePawn(Long gameId, Move move) {
         //check if game exists 
         Game gameById = gameRepository.findById(gameId).orElse(null);
 
@@ -285,13 +285,13 @@ public class GameService {
                     player.increaseTotalGamesLost();
                 }
             } 
-            return;
+            return gameById;
         }
         //update turn
         nextTurn(gameId);
         gameRepository.flush();
 
-
+        return gameById; 
     }
 
 
@@ -314,7 +314,7 @@ public class GameService {
 
 
 
-    public void placeWall(Long gameId, User user, int r, int c, WallOrientation orientation) {
+    public Game placeWall(Long gameId, User user, int r, int c, WallOrientation orientation) {
         Game game = getGame(gameId);
         User currentUser = game.getCurrentTurn();
         Board board = game.getBoard();
@@ -322,6 +322,10 @@ public class GameService {
 
         if (!canPlaceWall(gameId, user)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Cannot place wall. User has no walls left.");
+        }
+
+        if (!moveService.isValidWallField(board, r, c)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid wall position: wall overlaps with existing wall");
         }
 
 
@@ -388,6 +392,7 @@ public class GameService {
         //update turn
         nextTurn(gameId);
         gameRepository.flush();
+        return game;
     }
 
     public void nextTurn(Long gameId) {
