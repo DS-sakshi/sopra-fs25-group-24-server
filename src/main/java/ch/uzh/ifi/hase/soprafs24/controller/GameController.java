@@ -5,8 +5,12 @@ import ch.uzh.ifi.hase.soprafs24.constant.MoveType;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.entity.Game;
 import ch.uzh.ifi.hase.soprafs24.entity.Move;
+import ch.uzh.ifi.hase.soprafs24.entity.Pawn;
+import ch.uzh.ifi.hase.soprafs24.entity.Wall;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.MovePostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.WallGetDTO;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.PawnGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GameGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GameStatusDTO;
@@ -62,6 +66,37 @@ public class GameController {
 
         return DTOMapper.INSTANCE.convertEntityToGameGetDTO(game);
     }
+
+    @GetMapping("/game-lobby/{gameId}/walls")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public List<WallGetDTO> getWalls(@PathVariable Long gameId) {
+        // fetch all users in the internal representation
+        List<Wall> listWalls = gameService.getWalls(gameId);
+        List<WallGetDTO> wallGetDTOs = new ArrayList<>();
+
+        // convert each user to the API representation
+        for (Wall a:listWalls) {
+            wallGetDTOs.add(DTOMapper.INSTANCE.convertEntityToWallGetDTO(a));
+        }
+        return wallGetDTOs;
+    }
+
+    @GetMapping("/game-lobby/{gameId}/pawns")
+    @ResponseStatus(HttpStatus.OK)
+    @ResponseBody
+    public List<PawnGetDTO> getPawns(@PathVariable Long gameId) {
+        // fetch all users in the internal representation
+        List<Pawn> listPawns = gameService.getPawns(gameId);
+        List<PawnGetDTO> pawnGetDTOs = new ArrayList<>();
+
+        // convert each user to the API representation
+        for (Pawn a:listPawns) {
+            pawnGetDTOs.add(DTOMapper.INSTANCE.convertEntityToPawnGetDTO(a));
+        }
+        return pawnGetDTOs;
+    }
+
 
     @PostMapping("/game-lobby")
     @ResponseStatus(HttpStatus.CREATED)

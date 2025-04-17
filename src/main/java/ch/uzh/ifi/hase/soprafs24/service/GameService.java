@@ -94,6 +94,18 @@ public class GameService {
         return this.gameRepository.findAll();
     }
 
+    public List<Wall> getWalls(Long gameId) {
+        Game gameById = getGame(gameId);
+        List<Wall> walls =gameById.getBoard().getWalls();
+        return walls;
+    }
+
+    public List<Pawn> getPawns(Long gameId) {
+        Game gameById = getGame(gameId);
+        List<Pawn> pawns =gameById.getBoard().getPawns();
+        return pawns;
+    }
+
     // returns a specific game
     public Game getGame(Long gameId) {
         Game gameById = gameRepository.findById(gameId).orElse(null);

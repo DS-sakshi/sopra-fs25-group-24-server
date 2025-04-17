@@ -1,16 +1,21 @@
 package ch.uzh.ifi.hase.soprafs24.rest.mapper;
 
 import ch.uzh.ifi.hase.soprafs24.entity.User;
+import ch.uzh.ifi.hase.soprafs24.entity.Wall;
 import ch.uzh.ifi.hase.soprafs24.constant.GameStatus;
 import ch.uzh.ifi.hase.soprafs24.entity.Game;
 import ch.uzh.ifi.hase.soprafs24.entity.Move;
+import ch.uzh.ifi.hase.soprafs24.entity.Pawn;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GameGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GameStatusDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.MovePostDTO;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.PawnGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPutDTO;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.WallGetDTO;
+
 import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
 
@@ -85,4 +90,21 @@ public interface DTOMapper {
 
     @Mapping(source = "gameStatus", target = "gameStatus")
     GameStatusDTO convertEntityToGameStatusDTO(Game game);
+
+    @Mapping(source = "id", target = "id")
+    @Mapping(source = "color", target = "color")
+    @Mapping(source = "r", target = "r")
+    @Mapping(source = "c", target = "c")
+    @Mapping(source = "orientation", target = "orientation")
+    @Mapping(source = "board.id", target = "boardId")  // Get ID from nested Board
+    @Mapping(source = "user.id", target = "userId") 
+    WallGetDTO convertEntityToWallGetDTO(Wall wall);
+
+    @Mapping(source = "id", target = "id")
+    @Mapping(source = "color", target = "color")
+    @Mapping(source = "r", target = "r")
+    @Mapping(source = "c", target = "c")
+    @Mapping(source = "board.id", target = "boardId")
+    @Mapping(source = "user.id", target = "userId")
+    PawnGetDTO convertEntityToPawnGetDTO(Pawn pawn);
 }
