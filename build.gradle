@@ -58,6 +58,7 @@ sonar {
     property "sonar.projectKey", "DS-sakshi_sopra-fs25-group-24-server"
     property "sonar.organization", "ds-sakshi"
     property "sonar.host.url", "https://sonarcloud.io"
+    property "sonar.coverage.jacoco.xmlReportPaths", "${buildDir}/reports/jacoco/test/jacocoTestReport.xml"
     }
 }
 
@@ -71,6 +72,9 @@ test {
     useJUnitPlatform()
     testLogging.showStandardStreams = true
     maxParallelForks = 1
+}
+sonarqube {
+    dependsOn jacocoTestReport
 }
 
 File secretPropsFile = file('./local.properties')
