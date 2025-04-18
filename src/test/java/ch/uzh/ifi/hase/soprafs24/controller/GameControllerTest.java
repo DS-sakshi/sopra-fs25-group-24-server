@@ -1,14 +1,19 @@
 package ch.uzh.ifi.hase.soprafs24.controller;
 
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
+import ch.uzh.ifi.hase.soprafs24.constant.WallOrientation;
 import ch.uzh.ifi.hase.soprafs24.constant.GameStatus;
 import ch.uzh.ifi.hase.soprafs24.constant.MoveType;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
+import ch.uzh.ifi.hase.soprafs24.entity.Wall;
 import ch.uzh.ifi.hase.soprafs24.entity.Game;
+import ch.uzh.ifi.hase.soprafs24.entity.Pawn;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.MovePostDTO;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.PawnGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPutDTO;
+import ch.uzh.ifi.hase.soprafs24.rest.dto.WallGetDTO;
 import ch.uzh.ifi.hase.soprafs24.service.UserService;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -309,6 +314,54 @@ public class GameControllerTest {
     
         mockMvc.perform(deleteRequest)
             .andExpect(status().isNotFound());
+    }
+
+    // Test 12: getWalls (success case - 200)
+    @Test
+    public void getWalls_returnsWallList() throws Exception {
+        // given
+        Wall wall = new Wall();
+        wall.setId(1L);
+        wall.setR(3);
+        wall.setC(3);
+        wall.setOrientation(WallOrientation.HORIZONTAL);
+        List<Wall> walls = Collections.singletonList(wall);
+        
+        // Mocking the service 
+        given(gameService.getWalls(1L)).willReturn(walls);
+
+        // when/then
+        mockMvc.perform(get("/game-lobby/1/walls"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(1)))
+            .andExpect(jsonPath("$[0].id", is(1)))
+            .andExpect(jsonPath("$[0].r", is(3)))
+            .andExpect(jsonPath("$[0].c", is(3)))
+            .andExpect(jsonPath("$[0].orientation", is("HORIZONTAL")));
+    }
+
+    // Test 13: getPawns (success case - 200)
+    @Test
+    public void getPawns_returnsPawnList() throws Exception {
+        // given
+        Pawn pawn = new Pawn();
+        pawn.setId(1L);
+        pawn.setR(6);
+        pawn.setC(6);
+        pawn.setColor("BLUE");
+        List<Pawn> pawns = Collections.singletonList(pawn);
+
+        // Mocking the service and DTO mapper
+        given(gameService.getPawns(1L)).willReturn(pawns);
+                 
+        // when/then
+        mockMvc.perform(get("/game-lobby/1/pawns"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(1)))
+            .andExpect(jsonPath("$[0].id", is(1)))
+            .andExpect(jsonPath("$[0].r", is(6)))
+            .andExpect(jsonPath("$[0].c", is(6)))
+            .andExpect(jsonPath("$[0].color", is("BLUE")));
     }
     
 

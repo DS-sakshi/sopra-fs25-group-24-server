@@ -1,4 +1,4 @@
-/* package ch.uzh.ifi.hase.soprafs24.service;
+package ch.uzh.ifi.hase.soprafs24.service;
 
 import ch.uzh.ifi.hase.soprafs24.constant.GameStatus;
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
@@ -21,6 +21,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.web.server.ResponseStatusException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -29,6 +31,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 public class GameServiceTest {
+
+    private final Logger log = LoggerFactory.getLogger(GameServiceTest.class);
 
     @Mock
     private GameRepository gameRepository;
@@ -111,13 +115,12 @@ public class GameServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(testUser));
         when(userRepository.findById(2L)).thenReturn(Optional.of(testUser2));
 
-        // Fix for the error: use orElse pattern instead of Optional
-        when(gameRepository.findById(any(Long.class))).thenReturn(Optional.of(testGame));
         when(gameRepository.save(any(Game.class))).thenReturn(testGame);
         when(boardRepository.save(any(Board.class))).thenReturn(testBoard);
         when(pawnRepository.save(any(Pawn.class))).thenReturn(testPawn);
 
         // for the MoveService mock
+        when(moveService.isValidWallField(any(), anyInt(), anyInt())).thenReturn(true);
         when(moveService.isValidPawnMove(any(), any(), anyInt(), anyInt(), any())).thenReturn(true);
         when(moveService.getGoalRow(any(), any(), any())).thenReturn(17);  // Return a goal row that won't trigger win condition
         when(moveService.wouldBlockAllPaths(any(), any(), any(), anyInt(), anyInt(), any())).thenReturn(false);
@@ -141,6 +144,9 @@ public class GameServiceTest {
 
     @Test
     public void getGame_validId_returnsGame() {
+
+        Mockito.when(gameRepository.findById(Mockito.any())).thenReturn(Optional.of(testGame));
+
         // when
         Game result = gameService.getGame(1L);
 
@@ -148,15 +154,14 @@ public class GameServiceTest {
         assertEquals(testGame.getId(), result.getId());
     }
 
-    // @Test
-    // public void getGame_invalidId_throwsException() {
-    //     // given
-    //     when(gameRepository.findById(99L)).thenReturn(null);
-    //     when(gameRepository.findById(99L)).thenReturn(Optional.empty());
+    @Test
+    public void getGame_invalidId_throwsException() {
 
-    //     // when/then
-    //     assertThrows(ResponseStatusException.class, () -> gameService.getGame(99L));
-    // }
+        Mockito.when(gameRepository.findById(Mockito.any())).thenReturn(Optional.empty());
+
+        // when/then
+        assertThrows(ResponseStatusException.class, () -> gameService.getGame(99L));
+    }
 
     @Test
     public void createGame_validUser_success() {
@@ -196,6 +201,8 @@ public class GameServiceTest {
     @Test
     public void joinGame_validUserAndGame_success() {
         // when
+        Mockito.when(gameRepository.findById(Mockito.any())).thenReturn(Optional.of(testGame));
+
         gameService.joinGame(testUser2, 1L);
 
         // then
@@ -224,14 +231,14 @@ public class GameServiceTest {
         assertThrows(ResponseStatusException.class, () -> gameService.joinGame(testUser2, 1L));
     }
 
-    // @Test
-    // public void joinGame_invalidGame_throwsException() {
-    //     // given
-    //     when(gameRepository.findById(99L)).thenReturn(null);
+    @Test
+    public void joinGame_invalidGame_throwsException() {
+        // given
+        Mockito.when(gameRepository.findById(Mockito.any())).thenReturn(Optional.empty());
         
-    //     // when/then
-    //     assertThrows(ResponseStatusException.class, () -> gameService.joinGame(testUser2, 99L));
-    // }
+        // when/then
+        assertThrows(ResponseStatusException.class, () -> gameService.joinGame(testUser2, 99L));
+    }
 
     @Test
     public void joinGame_runningGame_throwsException() {
@@ -273,15 +280,16 @@ public class GameServiceTest {
         move.setUser(testUser);
         List<Integer> endPosition = new ArrayList<>();
         endPosition.add(2);
-        endPosition.add(9);
+        endPosition.add(8);
         move.setEndPosition(endPosition);
+        Mockito.when(gameRepository.findById(Mockito.any())).thenReturn(Optional.of(testGame));
 
         // when
         gameService.movePawn(1L, move);
 
         // then
         assertEquals(2, testPawn.getR());
-        assertEquals(9, testPawn.getC());
+        assertEquals(8, testPawn.getC());
         verify(gameRepository, times(2)).flush();
     }
 
@@ -293,7 +301,7 @@ public class GameServiceTest {
         move.setUser(testUser);
         List<Integer> endPosition = new ArrayList<>();
         endPosition.add(2);
-        endPosition.add(9);
+        endPosition.add(8);
         move.setEndPosition(endPosition);
 
         // when/then
@@ -304,6 +312,7 @@ public class GameServiceTest {
     public void canPlaceWall_underLimit_returnsTrue() {
         // given
         when(wallRepository.findByBoardIdAndUserId(1L, 1L)).thenReturn(new ArrayList<>());
+        Mockito.when(gameRepository.findById(Mockito.any())).thenReturn(Optional.of(testGame));
 
         // when
         boolean result = gameService.canPlaceWall(1L, testUser);
@@ -312,49 +321,52 @@ public class GameServiceTest {
         assertTrue(result);
     }
 
-    // @Test
-    // public void canPlaceWall_atLimit_returnsFalse() {
-    //     // given
-    //     List<Wall> walls = new ArrayList<>();
-    //     for (int i = 0; i < 10; i++) {
-    //         walls.add(new Wall());
-    //     }
-    //     when(wallRepository.findByBoardIdAndUserId(1L, 1L)).thenReturn(walls);
+    @Test
+    public void canPlaceWall_atLimit_returnsFalse() {
+        // given
+        List<Wall> walls = new ArrayList<>();
+        for (int i = 0; i < 11; i++) {
+            walls.add(new Wall());
+        }
+        when(wallRepository.findByBoardIdAndUserId(1L, 1L)).thenReturn(walls);
+        Mockito.when(gameRepository.findById(Mockito.any())).thenReturn(Optional.of(testGame));
 
-    //     // when
-    //     boolean result = gameService.canPlaceWall(1L, testUser);
+        // when
+        boolean result = gameService.canPlaceWall(1L, testUser);
 
-    //     // then
-    //     assertFalse(result);
-    // }
+        // then
+        assertFalse(result);
+    }
 
     @Test
     public void placeWall_validPosition_success() {
         // given
         when(wallRepository.findByBoardId(1L)).thenReturn(new ArrayList<>());
         when(wallRepository.findByBoardIdAndUserId(1L, 1L)).thenReturn(new ArrayList<>());
+        Mockito.when(gameRepository.findById(Mockito.any())).thenReturn(Optional.of(testGame));
 
         // when
-        gameService.placeWall(1L, testUser, 2, 2, WallOrientation.HORIZONTAL);
+        gameService.placeWall(1L, testUser, 9, 9, WallOrientation.VERTICAL);
 
         // then
         verify(wallRepository, times(1)).save(any(Wall.class));
         verify(gameRepository, times(2)).flush();
     }
 
-    // @Test
-    // public void placeWall_noWallsLeft_throwsException() {
-    //     // given
-    //     List<Wall> walls = new ArrayList<>();
-    //     for (int i = 0; i < 10; i++) {
-    //         walls.add(new Wall());
-    //     }
-    //     when(wallRepository.findByBoardIdAndUserId(1L, 1L)).thenReturn(walls);
+    @Test
+    public void placeWall_noWallsLeft_throwsException() {
+        // given
+        List<Wall> walls = new ArrayList<>();
+        for (int i = 0; i < 11; i++) {
+            walls.add(new Wall());
+        }
+        when(wallRepository.findByBoardIdAndUserId(1L, 1L)).thenReturn(walls);
+        Mockito.when(gameRepository.findById(Mockito.any())).thenReturn(Optional.of(testGame));
 
-    //     // when/then
-    //     assertThrows(ResponseStatusException.class, () -> 
-    //         gameService.placeWall(1L, testUser, 2, 2, WallOrientation.HORIZONTAL));
-    // }
+        // when/then
+        assertThrows(ResponseStatusException.class, () -> 
+            gameService.placeWall(1L, testUser, 3, 3, WallOrientation.HORIZONTAL));
+    }
 
     @Test
     public void placeWall_notUsersTurn_throwsException() {
@@ -457,6 +469,8 @@ public class GameServiceTest {
         users.add(testUser2);
         testGame.setCurrentUsers(users);
         testGame.setCurrentTurn(testUser);
+        Mockito.when(gameRepository.findById(Mockito.any())).thenReturn(Optional.of(testGame));
+
 
         // when
         gameService.nextTurn(1L);
@@ -470,6 +484,8 @@ public class GameServiceTest {
     public void delete_runningGame_setsGameStatusToEnded() {
         // given
         testGame.setGameStatus(GameStatus.RUNNING);
+        Mockito.when(gameRepository.findById(Mockito.any())).thenReturn(Optional.of(testGame));
+
 
         // when
         gameService.delete(1L, testUser);
@@ -482,6 +498,8 @@ public class GameServiceTest {
     public void delete_waitingGame_deletesGame() {
         // given
         testGame.setGameStatus(GameStatus.WAITING_FOR_USER);
+        Mockito.when(gameRepository.findById(Mockito.any())).thenReturn(Optional.of(testGame));
+
 
         // when
         gameService.delete(1L, testUser);
@@ -515,4 +533,4 @@ public class GameServiceTest {
     //     verify(testUser, times(1)).increaseTotalGamesLost();
     //     verify(testUser2, times(1)).increaseTotalGamesWon();
     // }
-} */
+} 
