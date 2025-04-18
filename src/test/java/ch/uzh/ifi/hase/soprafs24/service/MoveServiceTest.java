@@ -130,7 +130,7 @@ public class MoveServiceTest {
         assertTrue(moveService.hasPathToGoal(testGame, testBoard, testPawn2, testWalls));
     }
 
- /*    @Test
+    @Test
     public void hasPathToGoal_withWalls_returnsTrue() {
         // given
         Wall wall = new Wall();
@@ -143,7 +143,7 @@ public class MoveServiceTest {
         assertTrue(moveService.hasPathToGoal(testGame, testBoard, testPawn1, testWalls));
         assertTrue(moveService.hasPathToGoal(testGame, testBoard, testPawn2, testWalls));
     }
-
+/* 
     @Test
     public void hasPathToGoal_noPath_WallsBlocking_returnsFalse() {
         // Create a horizontal wall barrier across the entire board 
