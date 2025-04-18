@@ -73,9 +73,7 @@ test {
     testLogging.showStandardStreams = true
     maxParallelForks = 1
 }
-sonarqube {
-    dependsOn jacocoTestReport
-}
+
 
 File secretPropsFile = file('./local.properties')
 if (secretPropsFile.exists()) {
