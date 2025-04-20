@@ -65,7 +65,7 @@ public class PawnRepositoryIntegrationTest {
         assertEquals(pawn.getR(), found.getR());
         assertEquals(pawn.getC(), found.getC());
         assertEquals(pawn.getColor(), found.getColor());
-        assertEquals(user.getId(), found.getId());
+        assertEquals(user.getId(), found.getUserId());
         assertEquals(board.getId(), found.getBoard().getId());
     }
 }
