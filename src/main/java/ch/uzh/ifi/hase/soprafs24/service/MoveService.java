@@ -2,21 +2,16 @@ package ch.uzh.ifi.hase.soprafs24.service;
 
 import org.springframework.stereotype.Service;
 
-import ch.uzh.ifi.hase.soprafs24.constant.MoveType;
 import ch.uzh.ifi.hase.soprafs24.constant.WallOrientation;
 import ch.uzh.ifi.hase.soprafs24.entity.Board;
 import ch.uzh.ifi.hase.soprafs24.entity.Game;
 import ch.uzh.ifi.hase.soprafs24.entity.Pawn;
-import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.entity.Wall;
 
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 
 // This code is not finished at all, needs to be logically analysed again and tested
 /*  Assumptions for this code, maybe be changed later

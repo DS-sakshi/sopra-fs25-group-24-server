@@ -8,12 +8,8 @@ import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.entity.Wall;
 import ch.uzh.ifi.hase.soprafs24.entity.Game;
 import ch.uzh.ifi.hase.soprafs24.entity.Pawn;
-import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.MovePostDTO;
-import ch.uzh.ifi.hase.soprafs24.rest.dto.PawnGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.UserGetDTO;
-import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPutDTO;
-import ch.uzh.ifi.hase.soprafs24.rest.dto.WallGetDTO;
 import ch.uzh.ifi.hase.soprafs24.service.UserService;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -363,9 +359,63 @@ public class GameControllerTest {
             .andExpect(jsonPath("$[0].c", is(6)))
             .andExpect(jsonPath("$[0].color", is("BLUE")));
     }
-    
 
-    
+    // Test 14: Valid Wall Placement (success case - 200)
+    @Test
+    public void handleMove_validWallPlacement() throws Exception {
+        MovePostDTO moveDTO = new MovePostDTO();
+        moveDTO.setType(MoveType.ADD_WALL);
+        moveDTO.setWallPosition(List.of(4, 5));
+        moveDTO.setWallOrientation("VERTICAL");
+
+        mockMvc.perform(post("/game-lobby/1/move")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(asJsonString(moveDTO)))
+            .andExpect(status().isCreated());
+    }
+
+    // Test 14: Inalid Wall Placement (success case - 200)
+    @Test
+    public void handleMove_invalidWallPositionSize() throws Exception {
+        MovePostDTO moveDTO = new MovePostDTO();
+        moveDTO.setType(MoveType.ADD_WALL);
+        moveDTO.setWallPosition(List.of(4)); // Single element
+        moveDTO.setWallOrientation("HORIZONTAL");
+
+        mockMvc.perform(post("/game-lobby/1/move")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(asJsonString(moveDTO)))
+        .andExpect(status().isBadRequest());
+    }
+
+    //Test 15: Inalid Wall Placement (success case - 200)
+    @Test
+    public void handleMove_invalidMoveType() throws Exception {
+        String invalidMoveJson = "{\"type\":\"INVALID_TYPE\",\"wallPosition\":[4,5]}";
+
+        mockMvc.perform(
+            post("/game-lobby/1/move")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(invalidMoveJson))
+        )
+        .andExpect(status().isBadRequest());
+    }
+
+    // Test 16: Inalid Wall Placement (success case - 200)
+    @Test
+    public void handleMove_missingWallPosition() throws Exception {
+        MovePostDTO moveDTO = new MovePostDTO();
+        moveDTO.setType(MoveType.ADD_WALL);
+        moveDTO.setWallOrientation("HORIZONTAL");
+
+    mockMvc.perform(post("/game-lobby/1/move")
+       .contentType(MediaType.APPLICATION_JSON)
+       .content(asJsonString(moveDTO)))
+       .andExpect(status().isBadRequest());
+    }
+
+
+
 
     /**
      * Helper Method to convert userPostDTO into a JSON string such that the input

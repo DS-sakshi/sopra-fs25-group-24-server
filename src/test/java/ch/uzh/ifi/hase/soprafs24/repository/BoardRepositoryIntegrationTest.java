@@ -1,6 +1,7 @@
 package ch.uzh.ifi.hase.soprafs24.repository;
 
 import ch.uzh.ifi.hase.soprafs24.entity.Board;
+import ch.uzh.ifi.hase.soprafs24.entity.Game;
 import ch.uzh.ifi.hase.soprafs24.entity.Pawn;
 import ch.uzh.ifi.hase.soprafs24.entity.Wall;
 import ch.uzh.ifi.hase.soprafs24.entity.User;  // Import User
@@ -16,7 +17,10 @@ import java.util.Optional;
 import java.util.Date; // Import Date
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 
 @DataJpaTest
 public class BoardRepositoryIntegrationTest {
@@ -90,4 +94,67 @@ public class BoardRepositoryIntegrationTest {
         assertEquals(wall.getColor(), foundWalls.get(0).getColor());
         assertEquals(user.getId(), foundWalls.get(0).getUser().getId());
     }
+
+    @Test
+    public void removePawnAndWall_success() {
+        // given
+        Board board = new Board();
+        board.setSizeBoard(9);
+
+        User user = new User();
+        user.setName("Test User");
+        user.setUsername("testuser");
+        user.setPassword("password");
+        user.setToken("token");
+        user.setStatus(UserStatus.OFFLINE);
+        user.setCreationDate(new Date());
+        user = entityManager.persist(user);
+        entityManager.flush();
+
+        Pawn pawn = new Pawn();
+        pawn.setR(1);
+        pawn.setC(1);
+        pawn.setColor("Red");
+        pawn.setUser(user);
+        board.addPawn(pawn);
+
+        Wall wall = new Wall();
+        wall.setR(2);
+        wall.setC(2);
+        wall.setOrientation(WallOrientation.HORIZONTAL);
+        wall.setColor("Gray");
+        wall.setUser(user);
+        board.addWall(wall);
+
+        entityManager.persist(board);
+        entityManager.flush();
+
+        // when: Remove pawn and wall
+        board.removePawn(pawn);
+        board.removeWall(wall);
+
+        // then: Check that they are removed from the board
+        assertFalse(board.getPawns().contains(pawn), "Pawn should be removed from board");
+        assertFalse(board.getWalls().contains(wall), "Wall should be removed from board");
+
+        // and: Their board reference should be null
+        assertNull(pawn.getBoard(), "Pawn's board reference should be null after removal");
+        assertNull(wall.getBoard(), "Wall's board reference should be null after removal");
+    }
+
+    @Test
+    public void setAndGetGame_success() {
+        // given
+        Board board = new Board();
+        board.setSizeBoard(9);
+
+        Game game = new Game();
+
+        // when: Set game to board
+        board.setGame(game);
+
+        // then: getGame should return the same object
+        assertEquals(game, board.getGame(), "getGame should return the set Game object");
+    }
 }
+

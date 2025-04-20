@@ -1,13 +1,9 @@
 package ch.uzh.ifi.hase.soprafs24.entity;
 
 import ch.uzh.ifi.hase.soprafs24.constant.WallOrientation;
-import ch.uzh.ifi.hase.soprafs24.constant.WallOrientation;
 
 import javax.persistence.*;
 import java.util.List;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Arrays; 
 import java.io.Serializable;
 
 @Entity

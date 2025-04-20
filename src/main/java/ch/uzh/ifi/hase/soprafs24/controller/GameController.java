@@ -16,8 +16,6 @@ import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GameStatusDTO;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
 import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -35,7 +33,6 @@ import java.util.List;
 @RestController
 public class GameController {
 
-    private final Logger log = LoggerFactory.getLogger(GameController.class);
     private final GameService gameService;
 
     GameController(GameService gameService) {
@@ -139,6 +136,9 @@ public class GameController {
 
         User user = move.getUser();
         List<Integer> wallPosition = move.getWallPosition();
+        if (wallPosition == null || wallPosition.size() != 2) { // New validation
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Wall position requires exactly 2 coordinates");
+        }
 
         if (move.getType() != MoveType.ADD_WALL) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid move type for placing a wall");

@@ -1,9 +1,7 @@
 package ch.uzh.ifi.hase.soprafs24.service;
 
-import ch.uzh.ifi.hase.soprafs24.service.MoveService;
 import ch.uzh.ifi.hase.soprafs24.constant.UserStatus;
 import ch.uzh.ifi.hase.soprafs24.constant.GameStatus;
-import ch.uzh.ifi.hase.soprafs24.constant.MoveType;
 import ch.uzh.ifi.hase.soprafs24.constant.WallOrientation;
 import ch.uzh.ifi.hase.soprafs24.entity.User;
 import ch.uzh.ifi.hase.soprafs24.entity.Move;
@@ -16,8 +14,6 @@ import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.PawnRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.BoardRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.WallRepository;
-import ch.uzh.ifi.hase.soprafs24.rest.dto.UserPutDTO;
-import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,11 +23,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Date;
 import java.util.Set;
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 import java.util.ArrayList;
 
 /**
@@ -96,14 +89,12 @@ public class GameService {
 
     public List<Wall> getWalls(Long gameId) {
         Game gameById = getGame(gameId);
-        List<Wall> walls =gameById.getBoard().getWalls();
-        return walls;
+        return gameById.getBoard().getWalls();
     }
 
     public List<Pawn> getPawns(Long gameId) {
         Game gameById = getGame(gameId);
-        List<Pawn> pawns =gameById.getBoard().getPawns();
-        return pawns;
+        return gameById.getBoard().getPawns();
     }
 
     // returns a specific game
