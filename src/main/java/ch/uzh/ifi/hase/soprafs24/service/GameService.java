@@ -254,7 +254,7 @@ public class GameService {
 
         Pawn pawnToMove = null;
         for (Pawn pawn : pawns) {
-            if (pawn.getId().equals(currentUser.getId())) {
+            if (pawn.getUserId().equals(currentUser.getId())) {
                 pawnToMove = pawn;
             } 
         }
