@@ -384,7 +384,7 @@ public class GameService {
         wall.setR(r);
         wall.setC(c);
         wall.setOrientation(orientation);
-        wall.setUser(user);
+        wall.setUserId(user.getId());
         if (user.getId().equals(game.getCreator().getId())) {
             wall.setColor("red");
         } else {

@@ -96,7 +96,7 @@ public interface DTOMapper {
     @Mapping(source = "c", target = "c")
     @Mapping(source = "orientation", target = "orientation")
     @Mapping(source = "board.id", target = "boardId")  // Get ID from nested Board
-    @Mapping(source = "user.id", target = "userId") 
+    @Mapping(source = "userId", target = "userId") 
     WallGetDTO convertEntityToWallGetDTO(Wall wall);
 
     @Mapping(source = "id", target = "id")

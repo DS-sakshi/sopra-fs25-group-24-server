@@ -51,7 +51,7 @@ public class WallRepositoryIntegrationTest {
         wall.setC(1);
         wall.setColor("Red");
         wall.setOrientation(WallOrientation.HORIZONTAL);
-        wall.setUser(user);
+        wall.setUserId(user.getId());
         wall.setBoard(board);
 
         entityManager.persist(wall);
@@ -68,7 +68,7 @@ public class WallRepositoryIntegrationTest {
         assertEquals(wall.getC(), found.getC());
         assertEquals(wall.getColor(), found.getColor());
         assertEquals(wall.getOrientation(), found.getOrientation());
-        assertEquals(user.getId(), found.getUser().getId());
+        assertEquals(user.getId(), found.getUserId());
         assertEquals(board.getId(), found.getBoard().getId());
     }
 }

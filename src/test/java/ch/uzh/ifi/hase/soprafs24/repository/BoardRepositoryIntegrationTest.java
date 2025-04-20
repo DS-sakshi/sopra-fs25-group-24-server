@@ -62,7 +62,7 @@ public class BoardRepositoryIntegrationTest {
         wall.setC(2);
         wall.setOrientation(WallOrientation.HORIZONTAL);
         wall.setColor("Gray");
-        wall.setUser(user); // Associate with the User
+        wall.setUserId(user.getId()); // Associate with the User
         board.addWall(wall);
 
         entityManager.persist(board); // Persist the Board (cascades to Pawns and Walls)
@@ -92,7 +92,7 @@ public class BoardRepositoryIntegrationTest {
         assertEquals(wall.getC(), foundWalls.get(0).getC());
         assertEquals(wall.getOrientation(), foundWalls.get(0).getOrientation());
         assertEquals(wall.getColor(), foundWalls.get(0).getColor());
-        assertEquals(user.getId(), foundWalls.get(0).getUser().getId());
+        assertEquals(user.getId(), foundWalls.get(0).getUserId());
     }
 
     @Test
@@ -123,7 +123,7 @@ public class BoardRepositoryIntegrationTest {
         wall.setC(2);
         wall.setOrientation(WallOrientation.HORIZONTAL);
         wall.setColor("Gray");
-        wall.setUser(user);
+        wall.setUserId(user.getId());
         board.addWall(wall);
 
         entityManager.persist(board);
