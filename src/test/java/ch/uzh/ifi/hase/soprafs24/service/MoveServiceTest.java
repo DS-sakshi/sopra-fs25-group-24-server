@@ -130,7 +130,7 @@ public class MoveServiceTest {
         assertTrue(moveService.hasPathToGoal(testGame, testBoard, testPawn2, testWalls));
     }
 
- /*    @Test
+   @Test
     public void hasPathToGoal_withWalls_returnsTrue() {
         // given
         Wall wall = new Wall();
@@ -274,24 +274,25 @@ public class MoveServiceTest {
         // Create a nearly complete barrier with some walls
         Wall wall1 = new Wall();
         wall1.setR(15);
-        wall1.setC(6);
+        wall1.setC(1);
         wall1.setOrientation(WallOrientation.HORIZONTAL);
         testWalls.add(wall1);
 
         Wall wall2 = new Wall();
         wall2.setR(15);
-        wall2.setC(8);
+        wall2.setC(5);
         wall2.setOrientation(WallOrientation.HORIZONTAL);
         testWalls.add(wall2);
 
         Wall wall3 = new Wall();
         wall3.setR(15);
-        wall3.setC(10);
+        wall3.setC(9);
         wall3.setOrientation(WallOrientation.HORIZONTAL);
         testWalls.add(wall3);
 
+
         // This wall would block the last remaining path
-        boolean result = moveService.wouldBlockAllPaths(testGame, testBoard, testWalls, 13, 8, WallOrientation.HORIZONTAL);
+        boolean result = moveService.wouldBlockAllPaths(testGame, testBoard, testWalls, 16, 9, WallOrientation.VERTICAL);
         assertTrue(result);
     }
 
@@ -338,5 +339,5 @@ public class MoveServiceTest {
         // Test with out of bounds coordinates
         assertFalse(moveService.isValidWallField(testBoard, -1, 3));
         assertFalse(moveService.isValidWallField(testBoard, 17, 3));
-    }*/
+    }
 } 
