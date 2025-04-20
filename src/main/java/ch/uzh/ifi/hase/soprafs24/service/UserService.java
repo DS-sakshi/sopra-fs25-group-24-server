@@ -152,10 +152,6 @@ public class UserService {
             }
         }
 
-        // Update user fields from DTO
-        log.info("Updating user fields: username={}, birthday={}",
-                userPutDTO.getUsername(), userPutDTO.getBirthday());
-
         DTOMapper.INSTANCE.updateUserFromDTO(userPutDTO, user);
 
         // Save updated user

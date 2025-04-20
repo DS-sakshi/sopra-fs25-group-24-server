@@ -248,6 +248,11 @@ public class GameService {
         User currentUser = gameById.getCurrentTurn();
         User moveUser = userRepository.findById(move.getUser().getId()).orElse(null);
 
+        String userErrorMessage = "User not defined!"; // check if it is actually current users turn 
+        if (currentUser == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, userErrorMessage);
+        }
+        
         String turnErrorMessage = "Not users turn!"; // check if it is actually current users turn 
         if (currentUser != moveUser) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, turnErrorMessage);
