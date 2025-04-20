@@ -104,6 +104,6 @@ public interface DTOMapper {
     @Mapping(source = "r", target = "r")
     @Mapping(source = "c", target = "c")
     @Mapping(source = "board.id", target = "boardId")
-    @Mapping(source = "user.id", target = "userId")
+    @Mapping(source = "userId", target = "userId")
     PawnGetDTO convertEntityToPawnGetDTO(Pawn pawn);
 }

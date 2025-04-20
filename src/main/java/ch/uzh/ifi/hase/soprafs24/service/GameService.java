@@ -141,7 +141,7 @@ public class GameService {
         pawn.setR(0);
         pawn.setC(8);
         pawn.setColor("red");
-        pawn.setUser(userById);
+        pawn.setUserId(userById.getId());
         pawn.setBoard(board);
 
         //save entities
@@ -200,7 +200,7 @@ public class GameService {
         pawn.setR(16);
         pawn.setC(8);
         pawn.setColor("blue");
-        pawn.setUser(userById);
+        pawn.setUserId(userById.getId());
         pawn.setBoard(board);
     
         //board.addPawn(pawn);
@@ -254,7 +254,7 @@ public class GameService {
 
         Pawn pawnToMove = null;
         for (Pawn pawn : pawns) {
-            if (pawn.getUser().getId().equals(currentUser.getId())) {
+            if (pawn.getId().equals(currentUser.getId())) {
                 pawnToMove = pawn;
             } 
         }

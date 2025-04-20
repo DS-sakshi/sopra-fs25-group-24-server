@@ -50,7 +50,7 @@ public class PawnRepositoryIntegrationTest {
         pawn.setR(1);
         pawn.setC(1);
         pawn.setColor("Red");
-        pawn.setUser(user);  // Associate with the User
+        pawn.setUserId(user.getId());  // Associate with the User
         pawn.setBoard(board); // Associate with the Board
 
         entityManager.persist(pawn);
@@ -65,7 +65,7 @@ public class PawnRepositoryIntegrationTest {
         assertEquals(pawn.getR(), found.getR());
         assertEquals(pawn.getC(), found.getC());
         assertEquals(pawn.getColor(), found.getColor());
-        assertEquals(user.getId(), found.getUser().getId());
+        assertEquals(user.getId(), found.getId());
         assertEquals(board.getId(), found.getBoard().getId());
     }
 }

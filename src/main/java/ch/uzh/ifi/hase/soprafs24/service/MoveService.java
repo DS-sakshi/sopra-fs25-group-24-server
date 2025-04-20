@@ -92,7 +92,7 @@ public class MoveService {
     // Winning condition by getGoalRow
     public int getGoalRow(Game game, Board board, Pawn pawn) {
         int boardSize = board.getSizeBoard();
-        if (pawn.getUser().getId() == game.getCreator().getId()) {
+        if (pawn.getId() == game.getCreator().getId()) {
             return boardSize - 1;
         } else {
             return 0;

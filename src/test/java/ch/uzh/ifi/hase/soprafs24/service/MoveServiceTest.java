@@ -87,7 +87,7 @@ public class MoveServiceTest {
         testPawn1.setR(0);
         testPawn1.setC(8);
         testPawn1.setColor("red");
-        testPawn1.setUser(testUser);
+        testPawn1.setUserId(testUser.getId());
         testPawn1.setBoard(testBoard);
 
         // Create second test pawn
@@ -96,7 +96,7 @@ public class MoveServiceTest {
         testPawn2.setR(16);
         testPawn2.setC(8);
         testPawn2.setColor("blue");
-        testPawn2.setUser(testUser2);
+        testPawn2.setUserId(testUser2.getId());
         testPawn2.setBoard(testBoard);
 
         List<Pawn> pawns = new ArrayList<>();

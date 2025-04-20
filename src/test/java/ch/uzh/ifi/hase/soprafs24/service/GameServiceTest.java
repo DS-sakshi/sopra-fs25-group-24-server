@@ -94,7 +94,7 @@ public class GameServiceTest {
         testPawn.setR(1);
         testPawn.setC(9);
         testPawn.setColor("red");
-        testPawn.setUser(testUser);
+        testPawn.setUserId(testUser.getId());
         testPawn.setBoard(testBoard);
         testBoard.getPawns().add(testPawn);
 

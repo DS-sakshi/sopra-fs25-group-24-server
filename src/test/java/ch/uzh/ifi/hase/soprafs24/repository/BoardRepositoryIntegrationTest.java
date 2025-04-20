@@ -53,7 +53,7 @@ public class BoardRepositoryIntegrationTest {
         pawn.setR(1);
         pawn.setC(1);
         pawn.setColor("Red");
-        pawn.setUser(user);  // Associate with the User
+        pawn.setUserId(user.getId());  // Associate with the User
         board.addPawn(pawn);
 
         // Add a Wall to the Board, associating it with the User
@@ -83,7 +83,7 @@ public class BoardRepositoryIntegrationTest {
         assertEquals(pawn.getR(), foundPawns.get(0).getR());
         assertEquals(pawn.getC(), foundPawns.get(0).getC());
         assertEquals(pawn.getColor(), foundPawns.get(0).getColor());
-        assertEquals(user.getId(), foundPawns.get(0).getUser().getId());
+        assertEquals(user.getId(), foundPawns.get(0).getUserId());
 
         // Validate Walls
         List<Wall> foundWalls = found.getWalls();
@@ -115,7 +115,7 @@ public class BoardRepositoryIntegrationTest {
         pawn.setR(1);
         pawn.setC(1);
         pawn.setColor("Red");
-        pawn.setUser(user);
+        pawn.setUserId(user.getId());
         board.addPawn(pawn);
 
         Wall wall = new Wall();
