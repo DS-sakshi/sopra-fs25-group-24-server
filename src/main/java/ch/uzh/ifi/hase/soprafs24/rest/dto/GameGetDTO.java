@@ -12,6 +12,7 @@ public class GameGetDTO {
     private GameStatus gameStatus;
     private User creator;
     private Set<User> currentUsers;
+    private User currentTurn;
 
     public Long getId() {
         return id;
@@ -61,6 +62,13 @@ public class GameGetDTO {
         this.currentUsers = currentUsers;
     }
 
+    public User getCurrentTurn() {
+        return currentTurn;
+    }
+
+    public void setCurrentTurn(User currentTurn) {
+        this.currentTurn = currentTurn;
+    }
     public GameStatus getGameStatus() {
         return gameStatus;
     }
