@@ -177,5 +177,31 @@ public class UserService {
         userRepository.flush();
     }
 
-    
+
+        /**
+     * Validates if the token is associated with an active user
+     * 
+     * @param token - The authentication token to validate
+     * @return true if the token is valid, false otherwise
+     */
+    public boolean isValidToken(String token) {
+        if (token == null || token.isEmpty()) {
+            log.debug("Token validation failed: token is null or empty");
+            return false;
+        }
+        
+        // Find user with the given token
+        User userByToken = userRepository.findByToken(token);
+        
+        // Check if user exists and is in ONLINE status
+        boolean isValid = userByToken != null && userByToken.getStatus() == UserStatus.ONLINE;
+        
+        if (!isValid && userByToken != null) {
+            log.debug("Token validation failed: User {} is not ONLINE", userByToken.getId());
+        } else if (userByToken == null) {
+            log.debug("Token validation failed: No user found with token");
+        }
+        
+        return isValid;
+    }
 }
