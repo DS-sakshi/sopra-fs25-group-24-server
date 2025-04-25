@@ -1,0 +1,89 @@
+package ch.uzh.ifi.hase.soprafs24.security;
+
+import ch.uzh.ifi.hase.soprafs24.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
+/**
+ * Authentication Filter
+ * This filter validates auth tokens for protected endpoints and rejects
+ * unauthorized requests.
+ */
+@Component
+public class AuthFilter extends OncePerRequestFilter {
+    
+    @Autowired
+    private UserService userService;
+    
+    // Define paths that don't require authentication
+    private static final Set<String> PUBLIC_PATHS = new HashSet<>(
+            Arrays.asList("/login", "/users", "/", "/favicon.ico")
+    );
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
+            
+        String path = request.getServletPath();
+        
+        // Allow public paths without authentication
+        if (isPublicPath(path)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+        
+        // Extract token from Authorization header
+        String authHeader = request.getHeader("Authorization");
+        String token = null;
+        
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            token = authHeader.substring(7);
+        }
+        
+        // Check if token exists and is valid
+        if (token != null && userService.isValidToken(token)) {
+            // Proceed with the request
+            filterChain.doFilter(request, response);
+        } else {
+            // Return 401 Unauthorized if token is missing or invalid
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Authentication required");
+        }
+    }
+    
+    /**
+     * Checks if the requested path is in the public paths list
+     * @param path The request path
+     * @return true if path is public, false if authentication is required
+     */
+    private boolean isPublicPath(String path) {
+        // Check if path exactly matches a public path
+        if (PUBLIC_PATHS.contains(path)) {
+            return true;
+        }
+        
+        // Check if path starts with a public path prefix
+        for (String publicPath : PUBLIC_PATHS) {
+            if (path.startsWith(publicPath + "/")) {
+                return true;
+            }
+        }
+        
+        // Also allow static resources
+        return path.startsWith("/static/") || 
+               path.startsWith("/images/") || 
+               path.endsWith(".js") || 
+               path.endsWith(".css") || 
+               path.endsWith(".ico");
+    }
+}
