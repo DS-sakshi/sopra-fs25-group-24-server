@@ -533,4 +533,235 @@ public class GameServiceTest {
     //     verify(testUser, times(1)).increaseTotalGamesLost();
     //     verify(testUser2, times(1)).increaseTotalGamesWon();
     // }
+    @Test
+    public void movePawn_winCondition_updatesGameAndPlayerStats() {
+        // Setup
+        testGame.setGameStatus(GameStatus.RUNNING);
+        Move move = new Move();
+        move.setUser(testUser);
+        List<Integer> endPosition = new ArrayList<>();
+        endPosition.add(17); // Goal row position
+        endPosition.add(8);
+        move.setEndPosition(endPosition);
+
+        // Mock the goal row to match the endPosition's row
+        when(moveService.getGoalRow(any(), any(), any())).thenReturn(17);
+
+        Mockito.when(gameRepository.findById(any())).thenReturn(Optional.of(testGame));
+
+        // Execute
+        Game result = gameService.movePawn(1L, move);
+
+        // Verify
+        assertEquals(GameStatus.ENDED, result.getGameStatus());
+    }
+
+    @Test
+    public void movePawn_invalidMove_throwsException() {
+        // Setup
+        testGame.setGameStatus(GameStatus.RUNNING);
+        Move move = new Move();
+        move.setUser(testUser);
+        List<Integer> endPosition = new ArrayList<>();
+        endPosition.add(2);
+        endPosition.add(8);
+        move.setEndPosition(endPosition);
+        
+        // Override to make move validation fail
+        when(moveService.isValidPawnMove(any(), any(), anyInt(), anyInt(), any())).thenReturn(false);
+        
+        Mockito.when(gameRepository.findById(any())).thenReturn(Optional.of(testGame));
+
+        // Execute & Verify
+        assertThrows(ResponseStatusException.class, () -> gameService.movePawn(1L, move));
+    }
+
+    @Test
+    public void placeWall_wouldBlockAllPaths_throwsException() {
+        // Setup
+        when(wallRepository.findByBoardIdAndUserId(1L, 1L)).thenReturn(new ArrayList<>());
+        when(wallRepository.findByBoardId(1L)).thenReturn(new ArrayList<>());
+        Mockito.when(gameRepository.findById(any())).thenReturn(Optional.of(testGame));
+        
+        // Override to make the "would block paths" check fail
+        when(moveService.wouldBlockAllPaths(any(), any(), any(), anyInt(), anyInt(), any())).thenReturn(true);
+
+        // Execute & Verify
+        assertThrows(ResponseStatusException.class, () -> 
+            gameService.placeWall(1L, testUser, 3, 3, WallOrientation.HORIZONTAL));
+    }
+
+    @Test
+    public void nextTurn_rotatesCorrectlyWithMultiplePlayers() {
+        // Setup
+        Set<User> users = new HashSet<>();
+        users.add(testUser);
+        users.add(testUser2);
+        User testUser3 = new User();
+        testUser3.setId(3L);
+        testUser3.setUsername("testUsername3");
+        testUser3.setStatus(UserStatus.ONLINE);
+        users.add(testUser3);
+        
+        testGame.setCurrentUsers(users);
+        testGame.setCurrentTurn(testUser);
+        
+        Mockito.when(gameRepository.findById(any())).thenReturn(Optional.of(testGame));
+    
+        // Execute first turn rotation
+        gameService.nextTurn(1L);
+        
+        // Keep track of the first rotation result
+        User firstRotation = testGame.getCurrentTurn();
+        assertNotEquals(testUser, firstRotation);
+        
+        // Execute second turn rotation
+        gameService.nextTurn(1L);
+        
+        // Keep track of the second rotation result
+        User secondRotation = testGame.getCurrentTurn();
+        assertNotEquals(firstRotation, secondRotation);
+        
+        // Execute third turn rotation
+        gameService.nextTurn(1L);
+        
+        // Verify we've rotated back to the first user
+        assertEquals(testUser, testGame.getCurrentTurn());
+    }
+
+    @Test
+    public void delete_gameEndedStatisticsUpdated() {
+        // Setup
+        testGame.setGameStatus(GameStatus.RUNNING);
+        Set<User> users = new HashSet<>();
+        
+        // spy objects so we can verify method calls
+        User spyUser1 = spy(testUser);
+        User spyUser2 = spy(testUser2);
+        
+        users.add(spyUser1);
+        users.add(spyUser2);
+        testGame.setCurrentUsers(users);
+        
+        Mockito.when(gameRepository.findById(any())).thenReturn(Optional.of(testGame));
+
+        // Execute
+        gameService.delete(1L, spyUser1);
+
+        // Verify
+        assertEquals(GameStatus.ENDED, testGame.getGameStatus());
+        
+        // Verify on the spy objects, not the original user objects
+        verify(spyUser1).increaseTotalGamesLost();
+        verify(spyUser2).increaseTotalGamesWon();
+    }
+    
+
+    @Test
+    public void createGame_offlineCreator_throwsException() {
+        // Setup
+        testUser.setStatus(UserStatus.OFFLINE);
+
+        // Execute & Verify
+        assertThrows(ResponseStatusException.class, () -> gameService.createGame(testUser));
+    }
+
+    @Test
+    public void getGame_nonExistentGame_throwsException() {
+        // Setup
+        Mockito.when(gameRepository.findById(Mockito.any())).thenReturn(Optional.empty());
+    
+        // Execute & Verify
+        assertThrows(ResponseStatusException.class, () -> gameService.getGame(999L));
+    }
+
+    @Test
+    public void placeWall_wallLimitReached_throwsException() {
+        // Setup
+        List<Wall> existingWalls = new ArrayList<>();
+        for(int i = 0; i < 11; i++) {
+            existingWalls.add(new Wall());
+        }
+        
+        when(wallRepository.findByBoardIdAndUserId(anyLong(), anyLong())).thenReturn(existingWalls);
+        Mockito.when(gameRepository.findById(any())).thenReturn(Optional.of(testGame));
+
+        // Execute & Verify
+        assertFalse(gameService.canPlaceWall(1L, testUser));
+        assertThrows(ResponseStatusException.class, () -> 
+            gameService.placeWall(1L, testUser, 3, 3, WallOrientation.HORIZONTAL));
+    }
+
+    @Test
+    public void placeWall_samePositionDifferentOrientation_succeeds() {
+        // Setup
+        Wall existingWall = new Wall();
+        existingWall.setR(3);
+        existingWall.setC(3);
+        existingWall.setOrientation(WallOrientation.HORIZONTAL);
+        
+        List<Wall> walls = new ArrayList<>();
+        walls.add(existingWall);
+        
+        when(wallRepository.findByBoardId(1L)).thenReturn(walls);
+        when(wallRepository.findByBoardIdAndUserId(1L, 1L)).thenReturn(new ArrayList<>());
+        Mockito.when(gameRepository.findById(Mockito.any())).thenReturn(Optional.of(testGame));
+    
+        // Execute
+        gameService.placeWall(1L, testUser, 5, 5, WallOrientation.VERTICAL); // Different position
+        
+        // Verify
+        verify(wallRepository, times(1)).save(any());
+    }
+
+    @Test
+    public void getPawns_retrievesCorrectPawns() {
+        // Setup
+        Pawn pawn1 = new Pawn();
+        pawn1.setId(1L);
+        pawn1.setUserId(testUser.getId());
+        
+        Pawn pawn2 = new Pawn();
+        pawn2.setId(2L);
+        pawn2.setUserId(testUser2.getId());
+        
+        List<Pawn> pawns = Arrays.asList(pawn1, pawn2);
+        testBoard.setPawns(pawns);
+        testGame.setBoard(testBoard);
+        
+        Mockito.when(gameRepository.findById(any())).thenReturn(Optional.of(testGame));
+
+        // Execute
+        List<Pawn> result = gameService.getPawns(1L);
+        
+        // Verify
+        assertEquals(2, result.size());
+        assertTrue(result.contains(pawn1));
+        assertTrue(result.contains(pawn2));
+    }
+
+    @Test
+    public void getWalls_retrievesCorrectWalls() {
+        // Setup
+        Wall wall1 = new Wall();
+        wall1.setId(1L);
+        
+        Wall wall2 = new Wall();
+        wall2.setId(2L);
+        
+        List<Wall> walls = Arrays.asList(wall1, wall2);
+        testBoard.setWalls(walls);
+        testGame.setBoard(testBoard);
+        
+        Mockito.when(gameRepository.findById(any())).thenReturn(Optional.of(testGame));
+
+        // Execute
+        List<Wall> result = gameService.getWalls(1L);
+        
+        // Verify
+        assertEquals(2, result.size());
+        assertTrue(result.contains(wall1));
+        assertTrue(result.contains(wall2));
+    }
+
 } 
