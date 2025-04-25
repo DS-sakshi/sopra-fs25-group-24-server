@@ -599,29 +599,33 @@ public class GameServiceTest {
         users.add(testUser2);
         User testUser3 = new User();
         testUser3.setId(3L);
+        testUser3.setUsername("testUsername3");
+        testUser3.setStatus(UserStatus.ONLINE);
         users.add(testUser3);
         
         testGame.setCurrentUsers(users);
         testGame.setCurrentTurn(testUser);
         
         Mockito.when(gameRepository.findById(any())).thenReturn(Optional.of(testGame));
-
-        // Execute
+    
+        // Execute first turn rotation
         gameService.nextTurn(1L);
         
-        // Verify first rotation
-        assertNotEquals(testUser, testGame.getCurrentTurn());
+        // Keep track of the first rotation result
+        User firstRotation = testGame.getCurrentTurn();
+        assertNotEquals(testUser, firstRotation);
         
-        // Execute again
+        // Execute second turn rotation
         gameService.nextTurn(1L);
         
-        // Verify second rotation
-        assertNotEquals(testUser2, testGame.getCurrentTurn());
+        // Keep track of the second rotation result
+        User secondRotation = testGame.getCurrentTurn();
+        assertNotEquals(firstRotation, secondRotation);
         
-        // Execute once more
+        // Execute third turn rotation
         gameService.nextTurn(1L);
         
-        // Verify full rotation back to first player
+        // Verify we've rotated back to the first user
         assertEquals(testUser, testGame.getCurrentTurn());
     }
 
