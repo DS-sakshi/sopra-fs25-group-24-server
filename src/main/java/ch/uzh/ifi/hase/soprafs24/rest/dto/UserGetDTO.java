@@ -12,6 +12,9 @@ public class UserGetDTO {
     private Date creationDate;
     private Date birthday;
     private String token;
+    private int totalGamesPlayed;
+    private int totalGamesWon;
+    private int totalGamesLost;
 
     public Long getId() {
         return id;
@@ -67,5 +70,24 @@ public class UserGetDTO {
 
     public void setToken(String token) {
         this.token = token;
+    }
+    
+    public int getTotalGamesPlayed() {
+        return totalGamesPlayed;
+    }
+    public void setTotalGamesPlayed(int totalGamesPlayed) {
+        this.totalGamesPlayed = totalGamesPlayed;
+    }
+    public int getTotalGamesWon() {
+        return totalGamesWon;
+    }
+    public void setTotalGamesWon(int totalGamesWon) {
+        this.totalGamesWon = totalGamesWon;
+    }
+    public int getTotalGamesLost() {
+        return totalGamesLost;
+    }
+    public void setTotalGamesLost(int totalGamesLost) {
+        this.totalGamesLost = totalGamesLost;
     }
 }
