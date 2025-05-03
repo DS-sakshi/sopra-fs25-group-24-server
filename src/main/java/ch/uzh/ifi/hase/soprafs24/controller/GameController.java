@@ -15,6 +15,7 @@ import ch.uzh.ifi.hase.soprafs24.rest.dto.GameGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GameStatusDTO;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
+import ch.uzh.ifi.hase.soprafs24.websocket.RefreshWebSocketHandler;
 import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -153,6 +154,9 @@ public class GameController {
     } else {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid move type");
     }
+
+    // turnUpdate.setGameId(gameId); 
+    // websocketService.sendTurnUpdate(turnUpdate);
         
     return DTOMapper.INSTANCE.convertEntityToGameStatusDTO(game);
     
@@ -165,4 +169,5 @@ public class GameController {
         User user = DTOMapper.INSTANCE.convertUserPostGETtoEntity(userGetDTO);
         gameService.delete(gameId, user);
     }
+
 }

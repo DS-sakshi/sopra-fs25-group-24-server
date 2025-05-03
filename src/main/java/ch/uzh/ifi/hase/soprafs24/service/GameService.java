@@ -14,6 +14,7 @@ import ch.uzh.ifi.hase.soprafs24.repository.GameRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.PawnRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.BoardRepository;
 import ch.uzh.ifi.hase.soprafs24.repository.WallRepository;
+import ch.uzh.ifi.hase.soprafs24.websocket.RefreshWebSocketHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +26,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Set;
 import java.util.List;
+import java.util.Map;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Game Service
@@ -65,6 +68,7 @@ public class GameService {
     private final PawnRepository pawnRepository;
     private final WallRepository wallRepository;
     private final MoveService moveService;
+    private final RefreshWebSocketHandler refreshWebSocketHandler;
 
 
     @Autowired
@@ -73,13 +77,15 @@ public class GameService {
       @Qualifier("boardRepository") BoardRepository boardRepository,
        @Qualifier("pawnRepository") PawnRepository pawnRepository,
        @Qualifier("wallRepository") WallRepository wallRepository,
-       MoveService moveService) {
+       MoveService moveService,
+       RefreshWebSocketHandler refreshWebSocketHandler) {
         this.gameRepository = gameRepository;
         this.userRepository = userRepository;
         this.pawnRepository = pawnRepository;
         this.boardRepository = boardRepository;
         this.wallRepository = wallRepository;
         this.moveService = moveService;
+        this.refreshWebSocketHandler = refreshWebSocketHandler;
     }
 
     // return all games
@@ -298,7 +304,7 @@ public class GameService {
         //update turn
         nextTurn(gameId);
         gameRepository.flush();
-
+        refreshWebSocketHandler.broadcastRefresh();
         return gameById; 
     }
 
@@ -400,6 +406,7 @@ public class GameService {
         //update turn
         nextTurn(gameId);
         gameRepository.flush();
+        refreshWebSocketHandler.broadcastRefresh();
         return game;
     }
 
