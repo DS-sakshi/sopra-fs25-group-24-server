@@ -100,7 +100,7 @@ public class MoveService {
     // Winning condition by getGoalRow
     public int getGoalRow(Game game, Board board, Pawn pawn) {
         int boardSize = board.getSizeBoard();
-        if (pawn.getId() == game.getCreator().getId()) {
+        if (pawn.getUserId() == game.getCreator().getId()) { // PAWN ID IS NOT EQUAL TO USER ID - unfortunately
             return boardSize - 1;
         } else {
             return 0;
@@ -342,16 +342,6 @@ public class MoveService {
                 !isWallBlockingPath(startR, startC, diagR, diagC, walls)) {
                     return true;
             }
-/*                 boolean isOccupied = false;
-                for (Pawn otherPawn : board.getPawns()) {
-                    if (otherPawn.getR() == diagR && otherPawn.getC() == diagC) {
-                        isOccupied = true;
-                        break;
-                    }
-                }
-                
-                if (!isOccupied && !isWallBlockingPath(startR, startC, diagR, diagC, walls)) {
-                    return true; // Valid diagonal jump */
                 
         }
         

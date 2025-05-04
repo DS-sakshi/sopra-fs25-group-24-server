@@ -286,7 +286,7 @@ public class GameService {
         pawnToMove.setR(endPosition.get(0));
         pawnToMove.setC(endPosition.get(1));
         
-        //TODO check if winning condition is complete - Dora
+        
         //check win condition
         int goalRow = moveService.getGoalRow(gameById, board, pawnToMove);
         if (pawnToMove.getR() == goalRow) {
@@ -299,6 +299,10 @@ public class GameService {
                     player.increaseTotalGamesLost();
                 }
             } 
+
+            gameRepository.save(gameById);
+            gameRepository.flush();
+            refreshWebSocketHandler.broadcastRefresh();
             return gameById;
         }
         //update turn
@@ -449,6 +453,10 @@ public class GameService {
         } else if (gameById.getGameStatus() == GameStatus.WAITING_FOR_USER) {
             gameRepository.delete(gameById);
         }
+
+        gameRepository.save(gameById);
+        gameRepository.flush();
+        refreshWebSocketHandler.broadcastRefresh();
     }
 
 
