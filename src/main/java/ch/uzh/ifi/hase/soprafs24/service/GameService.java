@@ -453,6 +453,10 @@ public class GameService {
         } else if (gameById.getGameStatus() == GameStatus.WAITING_FOR_USER) {
             gameRepository.delete(gameById);
         }
+
+        gameRepository.save(gameById);
+        gameRepository.flush();
+        refreshWebSocketHandler.broadcastRefresh();
     }
 
 
