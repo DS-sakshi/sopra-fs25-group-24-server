@@ -294,8 +294,8 @@ public class MoveService {
                         // Check if there's a wall blocking the jump
                         if (isWallBlockingPath(adjR, adjC, jumpR, jumpC, walls)) {
                             // If jump is blocked by wall, check if diagonal moves are possible
-                            //return isValidDiagonalJump(board, pawn, adjR, adjC, walls);
-                            return false; //until DiagnonalJump
+                            return isValidDiagonalJump(board, pawn, adjR, adjC, walls);
+                            //return false; //until DiagnonalJump
                         }
 
                         } else {
@@ -308,44 +308,56 @@ public class MoveService {
         return false;
     }
     
-    // private boolean isValidDiagonalJump(Board board, Pawn pawn, int adjR, int adjC, List<Wall> walls) {
-    //     int startR = pawn.getR();
-    //     int startC = pawn.getC();
+    private boolean isValidDiagonalJump(Board board, Pawn pawn, int adjR, int adjC, List<Wall> walls) {
+        int startR = pawn.getR();
+        int startC = pawn.getC();
         
-    //     // Calculate the direction from start to adjacent pawn
-    //     int dirR = adjR- startR;
-    //     int dirC = adjC - startC;
+        // Calculate the direction from start to adjacent pawn
+        int dirR = adjR- startR;
+        int dirC = adjC - startC;
+
+        int[][] diagonalOptions;
+
+        if (dirR != 0) {
+            diagonalOptions = new int[][] {
+                {dirR, dirC + 2},  // Diagonal right from direction
+                {dirR, dirC - 2}, 
+            }; // Diagonal left from direction
+        } else if (dirC != 0) {
+            diagonalOptions = new int[][] {
+                {dirR + 2, dirC},  // Diagonal down from direction
+                {dirR - 2, dirC}   // Diagonal up from direction
+            };
+        } else {
+            return false; // No valid diagonal jump found
+        }
         
-    //     // Possible diagonal directions based on the adjacent pawn position
-    //     int[][] diagonalOptions = {
-    //         {dirR, dirC + 2},  // Diagonal right from direction
-    //         {dirR, dirC - 2},  // Diagonal left from direction
-    //         {dirR + 2, dirC},  // Diagonal down from direction
-    //         {dirR - 2, dirC}   // Diagonal up from direction
-    //     };
-        
-    //     for (int[] diag : diagonalOptions) {
-    //         int diagR = startR + diag[0];
-    //         int diagC = startC + diag[1];
+        for (int[] diag : diagonalOptions) {
+            int diagR = startR + diag[0];
+            int diagC = startC + diag[1];
             
-    //         // Check if diagonal position is within board and not occupied
-    //         if (diagR >= 0 && diagR < board.getSizeBoard() && diagC >= 0 && diagC < board.getSizeBoard()) {
-    //             boolean isOccupied = false;
-    //             for (Pawn otherPawn : board.getPawns()) {
-    //                 if (otherPawn.getR() == diagR && otherPawn.getC() == diagC) {
-    //                     isOccupied = true;
-    //                     break;
-    //                 }
-    //             }
+            // Check if diagonal position is within board and not occupied
+            if (diagR >= 0 && diagR < board.getSizeBoard() && 
+                diagC >= 0 && diagC < board.getSizeBoard() &&
+                !isWallBlockingPath(startR, startC, diagR, diagC, walls)) {
+                    return true;
+            }
+/*                 boolean isOccupied = false;
+                for (Pawn otherPawn : board.getPawns()) {
+                    if (otherPawn.getR() == diagR && otherPawn.getC() == diagC) {
+                        isOccupied = true;
+                        break;
+                    }
+                }
                 
-    //             if (!isOccupied && !isWallBlockingPath(startR, startC, diagR, diagC, walls)) {
-    //                 return true; // Valid diagonal jump
-    //             }
-    //         }
-    //     }
+                if (!isOccupied && !isWallBlockingPath(startR, startC, diagR, diagC, walls)) {
+                    return true; // Valid diagonal jump */
+                
+        }
         
-    //     return false; // No valid diagonal jump found
-    //}
+        
+        return false; // No valid diagonal jump found
+    }
 
     //Check if pawn field
     public boolean isValidPawnField(Board board, Pawn pawn, int targetR, int targetC) {
