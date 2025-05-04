@@ -316,10 +316,10 @@ public class GameService {
         List<Wall> userWalls = wallRepository.findByBoardIdAndUserId(board.getId(), user.getId());
         int wallsPlaced = userWalls.size();
         int maxWalls = 10;
-        // how i would extend for 4 players - Dora
-        // if (game.getCurrentUsers().size() == 4) {
-        //     maxWalls = 5;
-        // }
+        // extend for 4 players
+        if (game.getCurrentUsers().size() == 4) {
+            maxWalls = 5;
+        }
 
         return maxWalls >= wallsPlaced;
 
@@ -361,24 +361,24 @@ public class GameService {
             
             //check for overlap in the same orientation
             if (orientation == WallOrientation.HORIZONTAL) {
-                if (existingWall.getOrientation() == WallOrientation.HORIZONTAL && existingWall.getR() == r && (existingWall.getC() == c -1 || existingWall.getC() == c + 1)) {
+                if (existingWall.getOrientation() == WallOrientation.HORIZONTAL && existingWall.getR() == r && (existingWall.getC() == c -2 || existingWall.getC() == c + 2)) {
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid wall position: wall overlaps with existing wall");
                 }
             } else if (orientation == WallOrientation.VERTICAL) {
-                if (existingWall.getOrientation() == WallOrientation.VERTICAL && existingWall.getC() == c && (existingWall.getR() == r -1 || existingWall.getR() == r + 1)) {
+                if (existingWall.getOrientation() == WallOrientation.VERTICAL && existingWall.getC() == c && (existingWall.getR() == r -2|| existingWall.getR() == r + 2)) {
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid wall position: wall overlaps with existing wall");
                 }
             }
             // check for cross
             if(orientation == WallOrientation.HORIZONTAL) {
-                if ( existingWall.getOrientation() == WallOrientation.VERTICAL && existingWall.getR() == r -1 && existingWall.getC() == c + 1) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid wall position: wall overlaps with existing wall");
+                if ( existingWall.getOrientation() == WallOrientation.VERTICAL && existingWall.getR() == r && existingWall.getC() == c) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid wall position: wall crosses with existing wall");
                 }
             } else if (orientation == WallOrientation.VERTICAL) {
-                if (existingWall.getOrientation() == WallOrientation.HORIZONTAL && existingWall.getR() == r + 1 && existingWall.getC() == c -1 ) {
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid wall position: wall overlaps with existing wall");
+                if (existingWall.getOrientation() == WallOrientation.HORIZONTAL && existingWall.getR() == r  && existingWall.getC() == c ) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid wall position: wall crosses with existing wall");
                 }
-            }
+            } 
         }
 
         if (moveService.wouldBlockAllPaths(game, board, existingWalls, r, c, orientation)) {
