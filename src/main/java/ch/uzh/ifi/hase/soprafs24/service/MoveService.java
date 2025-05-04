@@ -33,12 +33,10 @@ public class MoveService {
     private final Logger log = LoggerFactory.getLogger(MoveService.class);
 
     //checks if a field is reachable
-    public boolean hasPathToGoal(Game game, Board board, Pawn pawn, List<Wall> walls) {
-        log.error("Checking path to goal for pawn at r={}, c={}", pawn.getR(), pawn.getC());
+    public boolean hasPathToGoal(Game game, Board board, Pawn pawn, int startR, int startC, List<Wall> walls) {
+        log.error("Checking path to goal for pawn at r={}, c={}", startR, startC);
         
         int boardSize = board.getSizeBoard();
-        int startR = pawn.getR();
-        int startC = pawn.getC();
         int goalR = getGoalRow(game, board, pawn);
         
         log.error("Goal row: {}", goalR);
@@ -66,20 +64,30 @@ public class MoveService {
             for (int[] dir : directions) {  
                 int newR = r + dir[0];
                 int newC = c + dir[1];
-    
-                if (((newR >= 0) && (newR < boardSize)) &&
-                    ((newC >= 0) && (newC < boardSize))) {
-                    
-                    if (isValidPawnMoveHasPath(board, pawn, newR, newC, r, c,walls) && 
-                        !visited[newR][newC]) {
-                        visited[newR][newC] = true;
-                        queue.add(new int[]{newR, newC});
-                    } 
-                } else {
+
+                if ((newR < 0) || (newR >= boardSize) ||
+                (newC < 0) || (newC >= boardSize)) {
                     log.error("Position out of bounds: r={}, c={}", newR, newC);
                     continue;
                 }
+                
+                if (visited[newR][newC]) {
+                    log.error("Already visited position r={}, c={}", newR, newC);
+                    continue;
+                }
+
+                log.error("Checking position r={}, c={}", newR, newC);
+    
+
+                    
+                if (isValidPawnMoveHasPath(board, pawn, newR, newC,r, c ,walls)) {
+                    visited[newR][newC] = true;
+                    queue.add(new int[]{newR, newC});
+                    log.error("Added to queue r={}, c={}", newR, newC);
+                } 
+
             }
+            
         }
         
         log.error("No path found to goal!");
@@ -99,34 +107,41 @@ public class MoveService {
         }
     }
 
-        // Validate move
-public boolean isValidPawnMoveHasPath(Board board, Pawn pawn, int targetR, int targetC, int startR , int startC, List<Wall> walls) {
+//  Even though redundant, needed to not make cicular dependencies
+    public boolean isValidPawnMoveHasPath(Board board, Pawn pawn, int targetR, int targetC, int startR , int startC, List<Wall> walls) {
     
         // Check if the target position is within the board boundaries
-            if (!isValidPawnField(board, pawn, targetR, targetC)) {
+        if (!isValidPawnField(board, pawn, targetR, targetC)) {
+            return false;
+        }
+
+        //Check first if occupied so the returning true or false logic is correct
+        // Check if the target position is occupied by another pawn
+        for (Pawn otherPawn : board.getPawns()) {
+            if (otherPawn.getR() == targetR &&
+                otherPawn.getC() == targetC) {
                 return false;
             }
-    
-            // Check if the target position is adjacent to the current position
-            if (!((Math.abs(targetR - startR) == 2 && Math.abs(targetC - startC) == 0) ||
-                (Math.abs(targetR - startR) == 0 && Math.abs(targetC - startC) == 2))) {
-                // if (!isValidJumpMove(board, pawn, targetR, targetC, walls)) {
-                //     return false;
-                // }
-                return false;
-            }
+        }
+
+        // Check if the target position is adjacent to the current position
+        if (((Math.abs(targetR - startR) == 2 && Math.abs(targetC - startC) == 0) ||
+            (Math.abs(targetR - startR) == 0 && Math.abs(targetC - startC) == 2))) {
+
             // Check if the target position is blocked by walls
             if (isWallBlockingPath(startR, startC, targetR, targetC, walls)) {
                 return false;
-                
-            }
-    
-            // if (!isValidJumpMove(board, pawn, targetR, targetC, walls)) {
-            //     return false;
-            // }
-            return true;
+            
             }
 
+            return true;
+        } else {
+            return  isValidJumpMove(board, pawn, targetR, targetC, walls);
+
+        }
+
+    }
+ 
 
     // Validate move
     public boolean isValidPawnMove(Board board, Pawn pawn, int targetR, int targetC, List<Wall> walls) {
@@ -138,15 +153,7 @@ public boolean isValidPawnMoveHasPath(Board board, Pawn pawn, int targetR, int t
             return false;
         }
 
-        // Check if the target position is adjacent to the current position
-        if (!((Math.abs(targetR - startR) == 2 && Math.abs(targetC - startC) == 0) ||
-            (Math.abs(targetR - startR) == 0 && Math.abs(targetC - startC) == 2))) {
-            // if (!isValidJumpMove(board, pawn, targetR, targetC, walls)) {
-            //     return false;
-            // }
-            return false;
-        }
-
+        //Check first if occupied so the returning true or false logic is correct
         // Check if the target position is occupied by another pawn
         for (Pawn otherPawn : board.getPawns()) {
             if (otherPawn.getR() == targetR &&
@@ -155,20 +162,24 @@ public boolean isValidPawnMoveHasPath(Board board, Pawn pawn, int targetR, int t
             }
         }
 
-        // Check if the target position is blocked by walls
-        if (isWallBlockingPath(startR, startC, targetR, targetC, walls)) {
-            return false;
+        // Check if the target position is adjacent to the current position
+        if (((Math.abs(targetR - startR) == 2 && Math.abs(targetC - startC) == 0) ||
+            (Math.abs(targetR - startR) == 0 && Math.abs(targetC - startC) == 2))) {
+
+            // Check if the target position is blocked by walls
+            if (isWallBlockingPath(startR, startC, targetR, targetC, walls)) {
+                return false;
             
+            }
+
+            return true;
+        } else {
+            return  isValidJumpMove(board, pawn, targetR, targetC, walls);
+
         }
 
-        // if (!isValidJumpMove(board, pawn, targetR, targetC, walls)) {
-        //     return false;
-        // }
-        return true;
-        }
-
+    }
     
-
 
 
     /**
@@ -222,7 +233,7 @@ public boolean isValidPawnMoveHasPath(Board board, Pawn pawn, int targetR, int t
         return false;
     }
 
-    // Maybe will put this one in the GameService later
+ 
     // Check if a wall would block all paths for at least one player
     // this results in walls beign unable to be placed for uneven numbers 
     public boolean wouldBlockAllPaths(Game game, Board board, List<Wall> existingWalls, int r, int c, WallOrientation orientation) {
@@ -236,7 +247,9 @@ public boolean isValidPawnMoveHasPath(Board board, Pawn pawn, int targetR, int t
         wallsWithNew.add(tempWall);
         
         for (Pawn pawn : board.getPawns()) {
-            if (!hasPathToGoal(game, board, pawn, wallsWithNew)) {
+            r = pawn.getR();
+            c = pawn.getC();
+            if (!hasPathToGoal(game, board, pawn, r, c, wallsWithNew)) {
                 return true;
             }
         }
@@ -245,54 +258,62 @@ public boolean isValidPawnMoveHasPath(Board board, Pawn pawn, int targetR, int t
     }
 
 
-    // // Checks if a jump move is valid
-    // private boolean isValidJumpMove(Board board, Pawn pawn, int targetR, int targetC, List<Wall> walls) {
-    //     int startR = pawn.getR();
-    //     int startC = pawn.getC();
+    // Checks if a jump move is valid
+    private boolean isValidJumpMove(Board board, Pawn pawn, int targetR, int targetC, List<Wall> walls) {
+        int startR = pawn.getR();
+        int startC = pawn.getC();
         
-    //     // First, check if there's a pawn adjacent to the current pawn
-    //     Pawn adjacentPawn = null; // For scope
+        // First, check if there's a pawn adjacent to the current pawn
+        Pawn adjacentPawn = null; // For scope
         
-    //     // Possible adjacent positions: up, down, left, right
-    //     int[][] adjacentDirections = {{-2, 0}, {2, 0}, {0, -2}, {0, 2}};
-    //     for (int[] dir : adjacentDirections) {
-    //         int adjR = startR + dir[0];
-    //         int adjC = startC + dir[1];
+        // Possible adjacent positions: up, down, left, right
+        int[][] adjacentDirections = {{-2, 0}, {2, 0}, {0, -2}, {0, 2}};
+        for (int[] dir : adjacentDirections) {
+            int adjR = startR + dir[0];
+            int adjC = startC + dir[1];
             
-    //         // Check if position is within board and contains a pawn
-    //         if (adjR >= 0 && adjR < board.getSizeBoard() &&
-    //             adjC >= 0 && adjC < board.getSizeBoard()) {
-    //             for (Pawn otherPawn : board.getPawns()) {
-    //                 if (otherPawn.getR() == adjR && otherPawn.getC() == adjC) {
-    //                     adjacentPawn = otherPawn;
+            // Check if position is within board and contains a pawn
+            if (adjR >= 0 && adjR < board.getSizeBoard() &&
+                adjC >= 0 && adjC < board.getSizeBoard()) {
+
+                for (Pawn otherPawn : board.getPawns()) {
+                    if (otherPawn.getR() == adjR && otherPawn.getC() == adjC) {
+                        adjacentPawn = otherPawn;
+                        break;
+                    }
+                }
+
+                if (adjacentPawn != null) {
                         
-    //                     // Check if the jump would be in the direction of this adjacent pawn
-    //                     int jumpR = adjR + dir[0];
-    //                     int jumpC = adjC + dir[1];
-                        
-    //                     // If the jump target matches our target position
-    //                     if (jumpR == targetR && jumpC == targetC) {
-    //                         // Check if there's a wall blocking the jump
-    //                         if (isWallBlockingPath(adjR, adjC, jumpR, jumpC, walls)) {
-    //                             // If jump is blocked by wall, check if diagonal moves are possible
-    //                             return isValidDiagonalJump(board, pawn, adjR, adjC, walls);
-    //                         }
-    //                         return true; // Valid jump move
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //     }
+                    // Check if the jump would be in the direction of this adjacent pawn
+                    int jumpR = adjR + dir[0];
+                    int jumpC = adjC + dir[1];
+                    
+                    // If the jump target matches our target position
+                    if (jumpR == targetR && jumpC == targetC) {
+                        // Check if there's a wall blocking the jump
+                        if (isWallBlockingPath(adjR, adjC, jumpR, jumpC, walls)) {
+                            // If jump is blocked by wall, check if diagonal moves are possible
+                            //return isValidDiagonalJump(board, pawn, adjR, adjC, walls);
+                            return false; //until DiagnonalJump
+                        }
+
+                        } else {
+                            return true;
+                    }
+                }
+            }
+        }
         
-    //     return false;
-    // }
+        return false;
+    }
     
     // private boolean isValidDiagonalJump(Board board, Pawn pawn, int adjR, int adjC, List<Wall> walls) {
     //     int startR = pawn.getR();
     //     int startC = pawn.getC();
         
     //     // Calculate the direction from start to adjacent pawn
-    //     int dirR = adjR - startR;
+    //     int dirR = adjR- startR;
     //     int dirC = adjC - startC;
         
     //     // Possible diagonal directions based on the adjacent pawn position
@@ -324,7 +345,7 @@ public boolean isValidPawnMoveHasPath(Board board, Pawn pawn, int targetR, int t
     //     }
         
     //     return false; // No valid diagonal jump found
-    // }
+    //}
 
     //Check if pawn field
     public boolean isValidPawnField(Board board, Pawn pawn, int targetR, int targetC) {

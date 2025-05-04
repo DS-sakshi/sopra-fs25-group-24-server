@@ -126,8 +126,8 @@ public class MoveServiceTest {
     @Test
     public void hasPathToGoal_noWalls_returnsTrue() {
         // Test that both players have a path to their goals when no walls are present
-        assertTrue(moveService.hasPathToGoal(testGame, testBoard, testPawn1, testWalls));
-        assertTrue(moveService.hasPathToGoal(testGame, testBoard, testPawn2, testWalls));
+        assertTrue(moveService.hasPathToGoal(testGame, testBoard, testPawn1, testPawn1.getR(), testPawn1.getC(),testWalls));
+        assertTrue(moveService.hasPathToGoal(testGame, testBoard, testPawn2, testPawn2.getR(), testPawn2.getC(), testWalls));
     }
 
    @Test
@@ -140,8 +140,8 @@ public class MoveServiceTest {
         testWalls.add(wall);
 
         // then
-        assertTrue(moveService.hasPathToGoal(testGame, testBoard, testPawn1, testWalls));
-        assertTrue(moveService.hasPathToGoal(testGame, testBoard, testPawn2, testWalls));
+        assertTrue(moveService.hasPathToGoal(testGame, testBoard, testPawn1, testPawn1.getR(), testPawn1.getC(),testWalls));
+        assertTrue(moveService.hasPathToGoal(testGame, testBoard, testPawn2, testPawn2.getR(), testPawn2.getC(), testWalls));
     }
 
     @Test
@@ -156,8 +156,8 @@ public class MoveServiceTest {
         }
 
         // At least one player should not have a path to goal
-        boolean player1HasPath = moveService.hasPathToGoal(testGame, testBoard, testPawn1, testWalls);
-        boolean player2HasPath = moveService.hasPathToGoal(testGame, testBoard, testPawn2, testWalls);
+        boolean player1HasPath = moveService.hasPathToGoal(testGame, testBoard, testPawn1, testPawn1.getR(), testPawn1.getC(),testWalls);
+        boolean player2HasPath = moveService.hasPathToGoal(testGame, testBoard, testPawn2, testPawn2.getR(), testPawn2.getC(), testWalls);
         
         // Either player1 or player2 (or both) should not have a path
         assertFalse(player1HasPath && player2HasPath);

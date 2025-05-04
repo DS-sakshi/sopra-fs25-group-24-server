@@ -23,6 +23,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.web.server.ResponseStatusException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ch.uzh.ifi.hase.soprafs24.websocket.RefreshWebSocketHandler;
 
 import java.util.*;
 
@@ -52,6 +53,9 @@ public class GameServiceTest {
     @Mock
     private MoveService moveService;
 
+    @Mock
+    private RefreshWebSocketHandler refreshWebSocketHandler;
+
     @InjectMocks
     private GameService gameService;
 
@@ -64,6 +68,8 @@ public class GameServiceTest {
     @BeforeEach
     public void setup() {
         MockitoAnnotations.openMocks(this);
+
+        Mockito.doNothing().when(refreshWebSocketHandler).broadcastRefresh();
 
         // Create first test user
         testUser = new User();
