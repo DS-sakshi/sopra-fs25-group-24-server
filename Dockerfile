@@ -22,7 +22,8 @@ USER 3301
 WORKDIR /app
 # copy built artifact from build stage
 COPY --from=build /app/build/libs/*.jar /app/soprafs24.jar
+
 # Expose the port on which the server will be running (based on application.properties)
 EXPOSE 8080
 # start server
-CMD ["java", "-jar", "/app/soprafs25.jar"]
+CMD ["java", "-jar", "/app/soprafs24.jar"]
