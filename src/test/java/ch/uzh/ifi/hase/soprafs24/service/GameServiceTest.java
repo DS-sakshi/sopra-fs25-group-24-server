@@ -69,7 +69,7 @@ public class GameServiceTest {
     public void setup() {
         MockitoAnnotations.openMocks(this);
 
-        Mockito.doNothing().when(refreshWebSocketHandler).broadcastRefresh();
+        Mockito.doNothing().when(refreshWebSocketHandler).broadcastRefresh(Mockito.anyString());
 
         // Create first test user
         testUser = new User();
