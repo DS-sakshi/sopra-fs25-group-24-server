@@ -3,6 +3,9 @@
 service: backendv2
 runtime: custom
 env: flex
+network:
+  session_affinity: true
+
 
 
 automatic_scaling:
