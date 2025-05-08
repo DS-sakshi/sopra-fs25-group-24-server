@@ -1,29 +1,29 @@
-FROM gradle:7.6-jdk17 as build
-# Set container working directory to /app
-WORKDIR /app
-# Copy Gradle configuration files
-COPY gradlew gradlew.bat /app/
-COPY gradle /app/gradle
-# Ensure Gradle wrapper is executable
-RUN chmod +x ./gradlew
-# Copy build script and source code
-COPY build.gradle settings.gradle /app/
-COPY src /app/src
-# Build the server
-RUN ./gradlew clean build --no-daemon
+# Step 1: Use a Gradle image to build the JAR
+FROM gradle:7.6-jdk17 AS builder
 
-# make image smaller by using multi stage build
-FROM openjdk:17-slim
-# Set the env to "production"
-ENV SPRING_PROFILES_ACTIVE=production
-# get non-root user
-USER 3301
-# Set container working directory to /app
+# Set the working directory in the container
 WORKDIR /app
-# copy built artifact from build stage
-COPY --from=build /app/build/libs/*.jar /app/soprafs24.jar
 
-# Expose the port on which the server will be running (based on application.properties)
+# Copy the Gradle wrapper and build files
+COPY gradle ./gradle
+COPY build.gradle .
+COPY settings.gradle .
+COPY src ./src
+
+# Run the Gradle build to generate the .jar
+RUN gradle clean build
+
+# Step 2: Create the runtime image with the JAR
+FROM eclipse-temurin:17-jdk
+
+# Set working directory inside the container
+WORKDIR /app
+
+# Copy the generated JAR from the builder step
+COPY --from=builder /app/build/libs/soprafs24.jar app.jar
+
+# Expose port 8080 — required by App Engine
 EXPOSE 8080
-# start server
-CMD ["java", "-jar", "/app/soprafs24.jar"]
+
+# Start the Spring Boot app
+ENTRYPOINT ["java", "-jar", "app.jar"]
