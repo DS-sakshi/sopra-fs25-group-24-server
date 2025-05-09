@@ -1,8 +1,5 @@
 dispatch:
-  # Route ALL traffic to backendv2 service regardless of hostname or path
-  - url: "*/*"
+  # Route everything to backendv2
+  - url: "*/"
     service: backendv2
-    
-  # Explicitly route the main domain 
-  - url: "sopra-fs25-saksch-new-server.oa.r.appspot.com/*"
-    service: backendv2
+
