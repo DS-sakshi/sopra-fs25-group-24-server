@@ -15,6 +15,7 @@ import ch.uzh.ifi.hase.soprafs24.rest.dto.GameGetDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GamePostDTO;
 import ch.uzh.ifi.hase.soprafs24.rest.dto.GameStatusDTO;
 import ch.uzh.ifi.hase.soprafs24.service.GameService;
+import ch.uzh.ifi.hase.soprafs24.service.UserService;
 import ch.uzh.ifi.hase.soprafs24.websocket.RefreshWebSocketHandler;
 import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
 import org.springframework.http.HttpStatus;
@@ -35,15 +36,20 @@ import java.util.List;
 public class GameController {
 
     private final GameService gameService;
+    private final UserService userService;
 
-    GameController(GameService gameService) {
+    GameController(GameService gameService, UserService userService) {
         this.gameService = gameService;
+        this.userService = userService;
     }
 
     @GetMapping("/game-lobby")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public List<GameGetDTO> getAllGames() {
+    public List<GameGetDTO> getAllGames(@RequestHeader(value = "Authorization", required = true) String token) {
+        //check Auth
+        userService.isValidToken(token);
+
         // fetch all users in the internal representation
         List<Game> loadedgames = gameService.getGames();
         List<GameGetDTO> gameGetDTOs = new ArrayList<>();
@@ -58,7 +64,10 @@ public class GameController {
     @GetMapping("/game-lobby/{gameId}")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public GameGetDTO getGame(@PathVariable Long gameId) {
+    public GameGetDTO getGame(@PathVariable Long gameId,  @RequestHeader(value = "Authorization", required = true) String token) {
+        //check Auth
+        userService.isValidToken(token);
+
         // fetch all users in the internal representation
         Game game = gameService.getGame(gameId);
 
@@ -68,7 +77,10 @@ public class GameController {
     @GetMapping("/game-lobby/{gameId}/walls")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public List<WallGetDTO> getWalls(@PathVariable Long gameId) {
+    public List<WallGetDTO> getWalls(@PathVariable Long gameId,  @RequestHeader(value = "Authorization", required = true) String token) {
+        //check Auth
+        userService.isValidToken(token);
+
         // fetch all users in the internal representation
         List<Wall> listWalls = gameService.getWalls(gameId);
         List<WallGetDTO> wallGetDTOs = new ArrayList<>();
@@ -83,7 +95,10 @@ public class GameController {
     @GetMapping("/game-lobby/{gameId}/pawns")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
-    public List<PawnGetDTO> getPawns(@PathVariable Long gameId) {
+    public List<PawnGetDTO> getPawns(@PathVariable Long gameId,  @RequestHeader(value = "Authorization", required = true) String token) {
+        //check Auth
+        userService.isValidToken(token);
+        
         // fetch all users in the internal representation
         List<Pawn> listPawns = gameService.getPawns(gameId);
         List<PawnGetDTO> pawnGetDTOs = new ArrayList<>();
@@ -99,8 +114,11 @@ public class GameController {
     @PostMapping("/game-lobby")
     @ResponseStatus(HttpStatus.CREATED)
     @ResponseBody
-    public GamePostDTO createGame(@RequestBody UserGetDTO userGetDTO) {
-      // convert API user to internal representation
+    public GamePostDTO createGame(@RequestBody UserGetDTO userGetDTO,  @RequestHeader(value = "Authorization", required = true) String token) {
+    //check Auth
+    userService.isValidToken(token);
+
+    // convert API user to internal representation
      User user = DTOMapper.INSTANCE.convertUserPostGETtoEntity(userGetDTO);
 
      Game game = gameService.createGame(user);
@@ -111,8 +129,11 @@ public class GameController {
     @PutMapping("/game-lobby/{gameId}/join")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
-    public void joinGame(@PathVariable Long gameId, @RequestBody UserGetDTO userGetDTO) {
-      // convert API user to internal representation
+    public void joinGame(@PathVariable Long gameId, @RequestBody UserGetDTO userGetDTO,  @RequestHeader(value = "Authorization", required = true) String token) {
+        //check Auth
+        userService.isValidToken(token);
+
+        // convert API user to internal representation
      User user = DTOMapper.INSTANCE.convertUserPostGETtoEntity(userGetDTO);
  
      gameService.joinGame(user, gameId);
@@ -122,7 +143,9 @@ public class GameController {
     @PostMapping("/game-lobby/{gameId}/move")
     @ResponseStatus(HttpStatus.CREATED)
     @ResponseBody
-    public GameStatusDTO handleMove(@PathVariable Long gameId, @RequestBody MovePostDTO movePostDTO) {
+    public GameStatusDTO handleMove(@PathVariable Long gameId, @RequestBody MovePostDTO movePostDTO,  @RequestHeader(value = "Authorization", required = true) String token) {
+        //check Auth
+        userService.isValidToken(token);
 
     Move move =  DTOMapper.INSTANCE.convertMovePostDTOtoEntity(movePostDTO);
     Game game; 
@@ -165,7 +188,10 @@ public class GameController {
     @DeleteMapping("/game-lobby/{gameId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
-    public void delete(@PathVariable Long gameId, @RequestBody UserGetDTO userGetDTO) {
+    public void delete(@PathVariable Long gameId, @RequestBody UserGetDTO userGetDTO,  @RequestHeader(value = "Authorization", required = true) String token) {
+        //check Auth
+        userService.isValidToken(token);
+
         User user = DTOMapper.INSTANCE.convertUserPostGETtoEntity(userGetDTO);
         gameService.delete(gameId, user);
     }
