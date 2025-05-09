@@ -1,0 +1,5 @@
+dispatch:
+  - url: "*/backendv2/*"
+    service: backendv2
+  - url: "*/default/*"
+    service: default
