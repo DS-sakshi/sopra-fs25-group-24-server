@@ -1,5 +1,5 @@
 dispatch:
   # Route everything to backendv2
-  - url: "*/*"
+  - url: "*/"
     service: backendv2
 
