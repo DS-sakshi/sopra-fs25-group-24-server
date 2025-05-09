@@ -1,5 +1,8 @@
 dispatch:
-  - url: "*/backendv2/*"
+  # Route all requests to backendv2 service when the hostname is backendv2-dot-sopra-fs25-saksch-new-server.oa.r.appspot.com
+  - url: "https://backendv2-dot-sopra-fs25-saksch-new-server.oa.r.appspot.com/*"
     service: backendv2
-  - url: "*/default/*"
+
+  # Route all requests to the default service when the hostname is sopra-fs25-saksch-new-server.oa.r.appspot.com
+  - url: "https://sopra-fs25-saksch-new-server.oa.r.appspot.com/*"
     service: default
