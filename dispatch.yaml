@@ -1,5 +1,0 @@
-dispatch:
-  # Route everything to backendv2
-  - url: "*/*"
-    service: backendv2
-
