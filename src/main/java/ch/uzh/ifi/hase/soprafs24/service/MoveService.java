@@ -123,17 +123,14 @@ public class MoveService {
                 return false;
             }
         }
-
+        // Check if the target position is blocked by walls
+        if (isWallBlockingPath(startR, startC, targetR, targetC, walls)) {
+            return false;
+        
+        }
         // Check if the target position is adjacent to the current position
         if (((Math.abs(targetR - startR) == 2 && Math.abs(targetC - startC) == 0) ||
             (Math.abs(targetR - startR) == 0 && Math.abs(targetC - startC) == 2))) {
-
-            // Check if the target position is blocked by walls
-            if (isWallBlockingPath(startR, startC, targetR, targetC, walls)) {
-                return false;
-            
-            }
-
             return true;
         } else {
             return  isValidJumpMove(board, pawn, targetR, targetC, walls);
@@ -161,17 +158,16 @@ public class MoveService {
                 return false;
             }
         }
-
+        // Check if the target position is blocked by walls
+        if (isWallBlockingPath(startR, startC, targetR, targetC, walls)) {
+            return false;
+        
+        }
         // Check if the target position is adjacent to the current position
         if (((Math.abs(targetR - startR) == 2 && Math.abs(targetC - startC) == 0) ||
             (Math.abs(targetR - startR) == 0 && Math.abs(targetC - startC) == 2))) {
-
-            // Check if the target position is blocked by walls
-            if (isWallBlockingPath(startR, startC, targetR, targetC, walls)) {
-                return false;
-            
-            }
-
+            return true;
+        } else if (isValidDiagonalJump(board, pawn, targetR, targetC, walls)) {
             return true;
         } else {
             return  isValidJumpMove(board, pawn, targetR, targetC, walls);
@@ -192,46 +188,43 @@ public class MoveService {
     
     // Check if a wall is blocking the path between two positions
     // For new board, wall are checked as the intersection of the two positions
-    private boolean isWallBlockingPath(int startR, int startC, int targetR, int targetC, List<Wall> walls) {
-        // Moving right
-        if (startR == targetR && startC + 2 == targetC) {
-            for (Wall wall : walls) {
-                if (wall.getOrientation() == WallOrientation.VERTICAL && 
-                    Math.abs(startR - wall.getR()) <= 1 && wall.getC() == startC + 1) {
-                    return true;
-                }
-            }
-        } 
-        // Moving left
-        else if (startR == targetR && startC - 2 == targetC) {
-            for (Wall wall : walls) {
-                if (wall.getOrientation() == WallOrientation.VERTICAL && 
-                    Math.abs(startR - wall.getR()) <= 1 && wall.getC() == targetC - 1) { 
-                    return true;
-                }
-            }
-        }
-        // Moving down
-        else if (startC == targetC && startR + 2 == targetR) {
-            for (Wall wall : walls) {
-                if (wall.getOrientation() == WallOrientation.HORIZONTAL && 
-                    Math.abs(startC - wall.getC()) <= 1 && wall.getR() == startR + 1) { 
-                    return true;
-                }
-            }
-        }
-        // Moving up
-        else if (startC == targetC && startR - 2 == targetR) {
-            for (Wall wall : walls) {
-                if (wall.getOrientation() == WallOrientation.HORIZONTAL && 
-                    Math.abs(startC - wall.getC()) <= 1 && wall.getR() == startR - 1) { 
-                    return true;
-                }
-            }
-        }
+// Check if a wall is blocking the path between two positions
+private boolean isWallBlockingPath(int startR, int startC, int targetR, int targetC, List<Wall> walls) {
+    // For a vertical move 
+    if (startC == targetC) {
+        // Determine the middle row that we're moving through
+        int midR = (startR + targetR) / 2;
         
-        return false;
+        // Check for horizontal walls that could block a vertical move
+        for (Wall wall : walls) {
+            if (wall.getOrientation() == WallOrientation.HORIZONTAL) {
+                
+                if ((wall.getR() == midR || wall.getR() == startR + 1 || wall.getR() == targetR - 1) &&
+                    (wall.getC() == startC - 1 || wall.getC() == startC || wall.getC() == startC + 1)) {
+                    return true;
+                }
+            }
+        }
+    } 
+    // For a horizontal move (same row)
+    else if (startR == targetR) {
+        // Determine the middle column that we're moving through
+        int midC = (startC + targetC) / 2;
+        
+        // Check for vertical walls that could block a horizontal move
+        for (Wall wall : walls) {
+            if (wall.getOrientation() == WallOrientation.VERTICAL) {
+                // A vertical wall at column between start and target would block the move
+                if ((wall.getC() == midC || wall.getC() == startC + 1 || wall.getC() == targetC - 1) &&
+                    (wall.getR() == startR - 1 || wall.getR() == startR || wall.getR() == startR + 1)) {
+                    return true;
+                }
+            }
+        }
     }
+    
+    return false;
+}
 
  
     // Check if a wall would block all paths for at least one player
@@ -262,7 +255,15 @@ public class MoveService {
     private boolean isValidJumpMove(Board board, Pawn pawn, int targetR, int targetC, List<Wall> walls) {
         int startR = pawn.getR();
         int startC = pawn.getC();
-        
+
+        //ensure the target is at a valid jump distance (4 spaces away in one direction)
+        int rowDiff = Math.abs(targetR - startR);
+        int colDiff = Math.abs(targetC - startC);
+    
+        // The target must be exactly 4 spaces away in a straight line for a jump
+        if (!((rowDiff == 4 && colDiff == 0) || (rowDiff == 0 && colDiff == 4))) {
+            return false; // Target is not at a valid jump distance
+        }
         // First, check if there's a pawn adjacent to the current pawn
         Pawn adjacentPawn = null; // For scope
         
@@ -292,14 +293,10 @@ public class MoveService {
                     // If the jump target matches our target position
                     if (jumpR == targetR && jumpC == targetC) {
                         // Check if there's a wall blocking the jump
-                        if (isWallBlockingPath(adjR, adjC, jumpR, jumpC, walls)) {
-                            // If jump is blocked by wall, check if diagonal moves are possible
-                            return isValidDiagonalJump(board, pawn, adjR, adjC, walls);
-                            //return false; //until DiagnonalJump
-                        }
-
-                        } else {
+                        if (!isWallBlockingPath(adjR, adjC, jumpR, jumpC, walls)) {
                             return true;
+
+                        } 
                     }
                 }
             }
