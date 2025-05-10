@@ -28,7 +28,7 @@ public class Application {
       @Override
     public void addCorsMappings(CorsRegistry registry) {
       registry.addMapping("/**")
-          .allowedOrigins("https://backendv2-dot-sopra-fs25-saksch-new-server.oa.r.appspot.com", "http://localhost:3000")
+          .allowedOrigins("https://sopra-fs25-saksch-client.vercel.app", "http://localhost:3000")
           .allowedMethods("GET", "POST", "PUT", "DELETE","OPTIONS")
           .allowedHeaders("Content-Type", "Authorization", "CurrentUserId")
           .allowCredentials(true)
