@@ -1,7 +1,8 @@
 # https://cloud.google.com/appengine/docs/the-appengine-environments#comparing_high-level_features
 # https://cloud.google.com/appengine/docs/standard
 # current use of version v3
-runtime: custom
+version: v3
+runtime: java17
 env: flex
 
 network:
