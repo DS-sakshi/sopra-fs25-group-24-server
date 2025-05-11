@@ -20,6 +20,7 @@ import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +44,7 @@ public class GameController {
     @GetMapping("/game-lobby")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
+    @Transactional
     public List<GameGetDTO> getAllGames() {
         // fetch all users in the internal representation
         List<Game> loadedgames = gameService.getGames();
@@ -58,6 +60,7 @@ public class GameController {
     @GetMapping("/game-lobby/{gameId}")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
+    @Transactional
     public GameGetDTO getGame(@PathVariable Long gameId) {
         // fetch all users in the internal representation
         Game game = gameService.getGame(gameId);
@@ -68,6 +71,7 @@ public class GameController {
     @GetMapping("/game-lobby/{gameId}/walls")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
+    @Transactional
     public List<WallGetDTO> getWalls(@PathVariable Long gameId) {
         // fetch all users in the internal representation
         List<Wall> listWalls = gameService.getWalls(gameId);
@@ -83,6 +87,7 @@ public class GameController {
     @GetMapping("/game-lobby/{gameId}/pawns")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
+    @Transactional
     public List<PawnGetDTO> getPawns(@PathVariable Long gameId) {
         // fetch all users in the internal representation
         List<Pawn> listPawns = gameService.getPawns(gameId);
@@ -99,6 +104,7 @@ public class GameController {
     @PostMapping("/game-lobby")
     @ResponseStatus(HttpStatus.CREATED)
     @ResponseBody
+    @Transactional
     public GamePostDTO createGame(@RequestBody UserGetDTO userGetDTO) {
       // convert API user to internal representation
      User user = DTOMapper.INSTANCE.convertUserPostGETtoEntity(userGetDTO);
@@ -111,6 +117,7 @@ public class GameController {
     @PutMapping("/game-lobby/{gameId}/join")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
+    @Transactional
     public void joinGame(@PathVariable Long gameId, @RequestBody UserGetDTO userGetDTO) {
       // convert API user to internal representation
      User user = DTOMapper.INSTANCE.convertUserPostGETtoEntity(userGetDTO);
@@ -122,6 +129,7 @@ public class GameController {
     @PostMapping("/game-lobby/{gameId}/move")
     @ResponseStatus(HttpStatus.CREATED)
     @ResponseBody
+    @Transactional
     public GameStatusDTO handleMove(@PathVariable Long gameId, @RequestBody MovePostDTO movePostDTO) {
 
     Move move =  DTOMapper.INSTANCE.convertMovePostDTOtoEntity(movePostDTO);
@@ -165,6 +173,7 @@ public class GameController {
     @DeleteMapping("/game-lobby/{gameId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
+    @Transactional
     public void delete(@PathVariable Long gameId, @RequestBody UserGetDTO userGetDTO) {
         User user = DTOMapper.INSTANCE.convertUserPostGETtoEntity(userGetDTO);
         gameService.delete(gameId, user);

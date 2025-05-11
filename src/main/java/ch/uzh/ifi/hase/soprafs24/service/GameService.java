@@ -23,6 +23,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import org.hibernate.Hibernate;
 
 import java.util.Set;
 import java.util.List;
@@ -89,32 +90,35 @@ public class GameService {
     }
 
     // return all games
+    @Transactional(readOnly = true)
     public List<Game> getGames() {
         return this.gameRepository.findAll();
     }
-
+    @Transactional(readOnly = true)
     public List<Wall> getWalls(Long gameId) {
         Game gameById = getGame(gameId);
         return gameById.getBoard().getWalls();
     }
-
+    @Transactional(readOnly = true)
     public List<Pawn> getPawns(Long gameId) {
         Game gameById = getGame(gameId);
         return gameById.getBoard().getPawns();
     }
 
-    // returns a specific game
+    @Transactional(readOnly = true)
     public Game getGame(Long gameId) {
         Game gameById = gameRepository.findById(gameId).orElse(null);
         String gameErrorMessage = "The Game does not exist!";
         if (gameById == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, gameErrorMessage);
         }
-
+        
+        // Initialize the lazy collection explicitly
+        Hibernate.initialize(gameById.getCurrentUsers());
+        
         log.debug("Retrieved Game: {}", gameById);
         return gameById;
     }
-     
     // Creates a game. Set passed user as creator and the status to waiting for enough players. Also already define Board, Pawns and the wall 
     public Game createGame(User user) {
         //check if user (creator of the game) exists 
@@ -326,7 +330,7 @@ public class GameService {
             maxWalls = 5;
         }
 
-        return maxWalls >= wallsPlaced;
+        return maxWalls > wallsPlaced;
 
     }
 

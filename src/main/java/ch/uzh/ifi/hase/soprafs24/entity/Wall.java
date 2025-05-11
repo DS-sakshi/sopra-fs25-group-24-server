@@ -23,7 +23,7 @@ public class Wall implements Serializable {
     @Enumerated(EnumType.STRING)
     private WallOrientation orientation;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "board_id", nullable = false)
     private Board board;
 

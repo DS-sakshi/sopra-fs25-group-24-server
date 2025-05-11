@@ -42,7 +42,7 @@ public class Game implements Serializable {
     @JoinColumn(name = "current_turn_id", nullable = false)
     private User currentTurn;
 
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JoinColumn(name = "board_id", unique = true)
     private Board board;
 
