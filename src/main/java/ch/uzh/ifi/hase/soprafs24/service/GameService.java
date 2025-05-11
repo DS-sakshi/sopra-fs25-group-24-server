@@ -326,7 +326,7 @@ public class GameService {
             maxWalls = 5;
         }
 
-        return maxWalls >= wallsPlaced;
+        return maxWalls > wallsPlaced;
 
     }
 
