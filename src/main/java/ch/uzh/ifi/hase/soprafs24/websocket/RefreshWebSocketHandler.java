@@ -24,9 +24,10 @@ public class RefreshWebSocketHandler extends TextWebSocketHandler {
         sessions.remove(session);
     }
 
-    // Broadcast refresh message to all connected clients
-    public void broadcastRefresh() {
-        TextMessage refreshMessage = new TextMessage("{\"type\":\"refresh\"}");
+    public void broadcastRefresh(String gameId) {
+        String payload = String.format("{\"type\":\"refresh\", \"gameId\":\"%s\"}", gameId);
+        TextMessage refreshMessage = new TextMessage(payload);
+    
         for (WebSocketSession session : sessions) {
             try {
                 if (session.isOpen()) {

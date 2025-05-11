@@ -17,7 +17,7 @@ public class RefreshController {
 
     @PostMapping("/trigger-refresh")
     public String triggerRefresh() {
-        refreshWebSocketHandler.broadcastRefresh();
+        refreshWebSocketHandler.broadcastRefresh("1");
         return "Refresh message sent";
     }
 }

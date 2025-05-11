@@ -223,6 +223,7 @@ public class GameService {
             for (User player : gameById.getCurrentUsers()) {
                 player.increaseTotalGamesPlayed();
             }
+            refreshWebSocketHandler.broadcastRefresh(String.valueOf(gameId));
         }
 
         log.debug("Updadet Information for Game: {}", gameById);
@@ -302,13 +303,13 @@ public class GameService {
 
             gameRepository.save(gameById);
             gameRepository.flush();
-            refreshWebSocketHandler.broadcastRefresh();
+            refreshWebSocketHandler.broadcastRefresh(String.valueOf(gameId));
             return gameById;
         }
         //update turn
         nextTurn(gameId);
         gameRepository.flush();
-        refreshWebSocketHandler.broadcastRefresh();
+        refreshWebSocketHandler.broadcastRefresh(String.valueOf(gameId));
         return gameById; 
     }
 
@@ -410,7 +411,7 @@ public class GameService {
         //update turn
         nextTurn(gameId);
         gameRepository.flush();
-        refreshWebSocketHandler.broadcastRefresh();
+        refreshWebSocketHandler.broadcastRefresh(String.valueOf(gameId));
         return game;
     }
 
@@ -456,7 +457,7 @@ public class GameService {
 
         gameRepository.save(gameById);
         gameRepository.flush();
-        refreshWebSocketHandler.broadcastRefresh();
+        refreshWebSocketHandler.broadcastRefresh(String.valueOf(gameId));
     }
 
 

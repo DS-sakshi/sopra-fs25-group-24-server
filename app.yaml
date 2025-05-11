@@ -1,7 +1,17 @@
 # https://cloud.google.com/appengine/docs/the-appengine-environments#comparing_high-level_features
 # https://cloud.google.com/appengine/docs/standard
-
-env: flex
+# current use of version v3
 runtime: custom
-instance_class: F2
+env: flex
+
+network:
+  session_affinity: true
+
+
+
+automatic_scaling:
+  min_num_instances: 1
+  max_num_instances: 1
+
+
 
