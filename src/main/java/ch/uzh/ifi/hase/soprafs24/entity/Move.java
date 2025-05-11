@@ -8,13 +8,13 @@ import java.util.List;
 
 public class Move {
 
-    @ElementCollection
+//    @ElementCollection
     private List<Integer> endPosition;
 
-    @ElementCollection
+//    @ElementCollection
     private List<Integer> wallPosition;
 
-    @ElementCollection
+//    @ElementCollection
     private WallOrientation wallOrientation;
 
     private MoveType type;
