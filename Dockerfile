@@ -19,6 +19,9 @@ FROM eclipse-temurin:17-jdk
 # Set working directory inside the container
 WORKDIR /app
 
+# Add the environment variable to the container
+ENV OPENAI_API_KEY=${OPENAI_API_KEY}
+
 # Copy the generated JAR from the builder step
 COPY --from=builder /app/build/libs/soprafs24.jar app.jar
 
