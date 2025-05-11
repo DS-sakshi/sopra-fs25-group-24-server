@@ -22,7 +22,7 @@ import java.util.HashSet;
  * the primary key
  */
 @Entity
-@Table(name = "USER")
+@Table(name = "app_user")
 @JsonIgnoreProperties("games")
 public class User implements Serializable {
 
