@@ -21,6 +21,7 @@ import ch.uzh.ifi.hase.soprafs24.rest.mapper.DTOMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +47,7 @@ public class GameController {
     @GetMapping("/game-lobby")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
+    @Transactional
     public List<GameGetDTO> getAllGames(@RequestHeader(value = "Authorization", required = true) String token) {
         //check Auth
         userService.isValidToken(token);
@@ -64,6 +66,7 @@ public class GameController {
     @GetMapping("/game-lobby/{gameId}")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
+    @Transactional
     public GameGetDTO getGame(@PathVariable Long gameId,  @RequestHeader(value = "Authorization", required = true) String token) {
         //check Auth
         userService.isValidToken(token);
@@ -77,6 +80,7 @@ public class GameController {
     @GetMapping("/game-lobby/{gameId}/walls")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
+    @Transactional
     public List<WallGetDTO> getWalls(@PathVariable Long gameId,  @RequestHeader(value = "Authorization", required = true) String token) {
         //check Auth
         userService.isValidToken(token);
@@ -95,6 +99,7 @@ public class GameController {
     @GetMapping("/game-lobby/{gameId}/pawns")
     @ResponseStatus(HttpStatus.OK)
     @ResponseBody
+    @Transactional
     public List<PawnGetDTO> getPawns(@PathVariable Long gameId,  @RequestHeader(value = "Authorization", required = true) String token) {
         //check Auth
         userService.isValidToken(token);
@@ -114,6 +119,7 @@ public class GameController {
     @PostMapping("/game-lobby")
     @ResponseStatus(HttpStatus.CREATED)
     @ResponseBody
+    @Transactional
     public GamePostDTO createGame(@RequestBody UserGetDTO userGetDTO,  @RequestHeader(value = "Authorization", required = true) String token) {
     //check Auth
     userService.isValidToken(token);
@@ -129,6 +135,7 @@ public class GameController {
     @PutMapping("/game-lobby/{gameId}/join")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
+    @Transactional
     public void joinGame(@PathVariable Long gameId, @RequestBody UserGetDTO userGetDTO,  @RequestHeader(value = "Authorization", required = true) String token) {
         //check Auth
         userService.isValidToken(token);
@@ -143,6 +150,7 @@ public class GameController {
     @PostMapping("/game-lobby/{gameId}/move")
     @ResponseStatus(HttpStatus.CREATED)
     @ResponseBody
+    @Transactional
     public GameStatusDTO handleMove(@PathVariable Long gameId, @RequestBody MovePostDTO movePostDTO,  @RequestHeader(value = "Authorization", required = true) String token) {
         //check Auth
         userService.isValidToken(token);
@@ -188,6 +196,7 @@ public class GameController {
     @DeleteMapping("/game-lobby/{gameId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
+    @Transactional
     public void delete(@PathVariable Long gameId, @RequestBody UserGetDTO userGetDTO,  @RequestHeader(value = "Authorization", required = true) String token) {
         //check Auth
         userService.isValidToken(token);
