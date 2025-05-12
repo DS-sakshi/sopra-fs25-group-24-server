@@ -176,7 +176,16 @@ public class GameController {
     @Transactional
     public void delete(@PathVariable Long gameId, @RequestBody UserGetDTO userGetDTO) {
         User user = DTOMapper.INSTANCE.convertUserPostGETtoEntity(userGetDTO);
-        gameService.delete(gameId, user);
+        try{
+            gameService.delete(gameId, user);
+        } catch (ResponseStatusException e) {
+        // Re-throw the exception with the same status and message
+            throw e;
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, 
+                "An unexpected error occurred while deleting the game");
+        }
     }
+    
 
 }

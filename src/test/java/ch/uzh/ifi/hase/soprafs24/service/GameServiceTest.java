@@ -635,7 +635,7 @@ public class GameServiceTest {
         assertEquals(testUser, testGame.getCurrentTurn());
     }
 
-    @Test
+   @Test
     public void delete_gameEndedStatisticsUpdated() {
         // Setup
         testGame.setGameStatus(GameStatus.RUNNING);
@@ -649,7 +649,8 @@ public class GameServiceTest {
         users.add(spyUser2);
         testGame.setCurrentUsers(users);
         
-        Mockito.when(gameRepository.findById(any())).thenReturn(Optional.of(testGame));
+        when(gameRepository.findById(any())).thenReturn(Optional.of(testGame));
+        when(userRepository.findById(spyUser1.getId())).thenReturn(Optional.of(spyUser1));
 
         // Execute
         gameService.delete(1L, spyUser1);
@@ -660,6 +661,11 @@ public class GameServiceTest {
         // Verify on the spy objects, not the original user objects
         verify(spyUser1).increaseTotalGamesLost();
         verify(spyUser2).increaseTotalGamesWon();
+        
+        // Verify repository operations - remove the save verification
+        verify(gameRepository, times(1)).delete(testGame);
+        verify(gameRepository, times(1)).flush();
+        verify(refreshWebSocketHandler, times(1)).broadcastRefresh(anyString());
     }
     
 
