@@ -241,9 +241,9 @@ public class MoveService {
         wallsWithNew.add(tempWall);
         
         for (Pawn pawn : board.getPawns()) {
-            r = pawn.getR();
-            c = pawn.getC();
-            if (!hasPathToGoal(game, board, pawn, r, c, wallsWithNew)) {
+            int pawnR = pawn.getR();
+            int pawnC= pawn.getC();
+            if (!hasPathToGoal(game, board, pawn, pawnR, pawnC, wallsWithNew)) {
                 return true;
             }
         }

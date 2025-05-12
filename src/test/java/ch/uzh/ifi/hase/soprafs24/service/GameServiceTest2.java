@@ -495,30 +495,42 @@ public class GameServiceTest2 {
         testGame.setCurrentUsers(users);
         
         when(gameRepository.findById(any())).thenReturn(Optional.of(testGame));
+        when(userRepository.findById(testUser.getId())).thenReturn(Optional.of(testUser));
         
         // When
         gameService.delete(1L, testUser);
         
         // Then
         assertEquals(GameStatus.ENDED, testGame.getGameStatus());
-        verify(gameRepository, times(1)).save(testGame);
-        //verify(refreshWebSocketHandler, atLeastOnce()).broadcastRefresh();
+        
+        // Remove the save verification
+        verify(gameRepository, times(1)).delete(testGame);
+        verify(gameRepository, times(1)).flush();
     }
-    
+        
     @Test
     public void delete_waitingGame_removesGameFromRepository() {
         // Given
         testGame.setGameStatus(GameStatus.WAITING_FOR_USER);
+        testGame.setCreator(testUser); // Set the test user as creator
+        
+        // Set up the test user to be part of the game
+        Set<User> users = new HashSet<>();
+        users.add(testUser);
+        testGame.setCurrentUsers(users);
         
         when(gameRepository.findById(any())).thenReturn(Optional.of(testGame));
+        when(userRepository.findById(testUser.getId())).thenReturn(Optional.of(testUser));
         
         // When
         gameService.delete(1L, testUser);
         
         // Then
         verify(gameRepository, times(1)).delete(testGame);
-        verify(gameRepository, times(1)).save(testGame);
-      //  verify(refreshWebSocketHandler, atLeastOnce()).broadcastRefresh();
+        
+        // Remove the save verification
+        verify(gameRepository, times(1)).flush();
+        verify(refreshWebSocketHandler, times(1)).broadcastRefresh(anyString());
     }
     
 }

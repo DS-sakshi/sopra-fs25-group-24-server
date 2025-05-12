@@ -437,10 +437,18 @@ public class GameService {
     
     public void delete(Long gameId, User forfeiter) {
         Game gameById = gameRepository.findById(gameId).orElse(null);
-
+        
         String gameErrorMessage = "The Game does not exist!";
         if (gameById == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, gameErrorMessage);
+        }
+
+        User forfeiterId = userRepository.findById(forfeiter.getId()).orElse(null);
+        if (forfeiterId == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+        }
+        if (!gameById.getCurrentUsers().contains(forfeiterId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "User is not part of this game");
         }
         
         if(gameById.getGameStatus() == GameStatus.RUNNING){
@@ -449,24 +457,21 @@ public class GameService {
             // get Users to adjust User statistics (User that forfeits the game loses while the other wins)
             Set<User> users = gameById.getCurrentUsers();
             for (User user : users) {
-                if (user.equals(forfeiter)) {
+                if (user.getId().equals(forfeiterId.getId())) {
                     user.increaseTotalGamesLost();
                 } else {
                     user.increaseTotalGamesWon();
                 }
             }
         } else if (gameById.getGameStatus() == GameStatus.WAITING_FOR_USER) {
-            gameRepository.delete(gameById);
+            if (!gameById.getCreator().getId().equals(forfeiterId.getId())) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, 
+                    "Only the creator can delete a game that hasn't started yet");
+            }
         }
-
-        gameRepository.save(gameById);
+        gameRepository.delete(gameById);
         gameRepository.flush();
         refreshWebSocketHandler.broadcastRefresh(String.valueOf(gameId));
+
     }
-
-
-
-    
-        
-        
 }
