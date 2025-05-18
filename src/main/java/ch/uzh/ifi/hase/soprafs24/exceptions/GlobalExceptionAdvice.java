@@ -14,12 +14,28 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
 
-@ControllerAdvice(annotations = RestController.class)
+@ControllerAdvice()
 public class GlobalExceptionAdvice extends ResponseEntityExceptionHandler {
 
   private final Logger log = LoggerFactory.getLogger(GlobalExceptionAdvice.class);
+
+  
+@ExceptionHandler(ResponseStatusException.class)
+public ResponseEntity<Object> handleResponseStatusException(ResponseStatusException ex, HttpServletRequest request) {
+    // Build your own error response
+    Map<String, Object> body = new HashMap<>();
+    body.put("timestamp", System.currentTimeMillis());
+    body.put("status", ex.getStatus().value());
+    body.put("error", ex.getStatus().getReasonPhrase());
+    body.put("message", ex.getReason() != null ? ex.getReason() : "Unknown error");
+    body.put("path", request.getRequestURI());
+    return new ResponseEntity<>(body, ex.getStatus());
+}
 
   @ExceptionHandler(value = { IllegalArgumentException.class, IllegalStateException.class })
   protected ResponseEntity<Object> handleConflict(RuntimeException ex, WebRequest request) {
