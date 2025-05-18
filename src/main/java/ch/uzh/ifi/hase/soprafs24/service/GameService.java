@@ -439,7 +439,7 @@ public class GameService {
         Game gameById = gameRepository.findById(gameId).orElse(null);
         
         String gameErrorMessage = "The Game does not exist!";
-        if (gameById == null) {
+        if (gameById == null) { 
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, gameErrorMessage);
         }
 
