@@ -145,7 +145,7 @@ src/main/java/ch/uzh/ifi/hase/soprafs24/
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/YOUR_USERNAME/sopra-fs25-group-24-server.git
+   git clone [https://github.com/DS-sakshi/sopra-fs25-group-24-server]
    cd sopra-fs25-group-24-server
    ```
 
@@ -153,7 +153,10 @@ src/main/java/ch/uzh/ifi/hase/soprafs24/
    ```bash
    ./gradlew build
    ```
-
+2.5. **Build the project without tests**
+   ```bash
+   ./gradlew build -x test
+   ```
 3. **Run the application**
    ```bash
    ./gradlew bootRun
@@ -185,12 +188,13 @@ To skip tests during development:
 
 #### User Registration
 ```http
-POST /login/register
+POST /login/users
 Content-Type: application/json
 
 {
-  "username": "string",
-  "password": "string"
+    "username": "string",
+    "name": "string"
+    "password": "string"
 }
 ```
 
@@ -200,8 +204,9 @@ POST /login
 Content-Type: application/json
 
 {
-  "username": "string",
-  "password": "string"
+    "username": "string",
+    "name": "string"
+    "password": "string"
 }
 ```
 
@@ -220,25 +225,53 @@ Authorization: Bearer {token}
 Content-Type: application/json
 
 {
-  "boardSize": 9,
-  "timeLimit": 60,
-  "userCount": 2
+    "id": 2,
+    "name": "Test Player 2",
+    "username": "player2",
+    "status": "ONLINE",
+    "creationDate": "2025-05-02T11:21:24.855+00:00",
+    "birthday": null,
+    "token": "5049268f-c3ff-4042-9b26-9fd8f6e7daa6"
 }
 ```
 
 **Response (201 Created):**
 ```json
 {
-  "id": 1,
-  "numberUsers": 2,
-  "sizeBoard": 9,
-  "timeLimit": 60,
-  "gameStatus": "WAITING_FOR_USER",
-  "creator": {
     "id": 1,
-    "username": "player1"
-  },
-  "currentUsers": [...]
+    "numberUsers": 2,
+    "sizeBoard": 9,
+    "timeLimit": 0,
+    "gameStatus": "WAITING_FOR_USER",
+    "creator": {
+        "id": 2,
+        "name": "Test Player 1",
+        "username": "player1",
+        "token": "f2b6f0b5-315a-4be1-9440-c8f58b4b79b2",
+        "status": "ONLINE",
+        "password": "password123",
+        "creationDate": "2025-05-19T15:30:07.001+00:00",
+        "birthday": null,
+        "totalGamesWon": 0,
+        "totalGamesLost": 0,
+        "totalGamesPlayed": 0
+    },
+   "currentUsers": [
+        {
+            "id": 2,
+            "name": "Test Player 1",
+            "username": "player1",
+            "token": "f2b6f0b5-315a-4be1-9440-c8f58b4b79b2",
+            "status": "ONLINE",
+            "password": "password123",
+            "creationDate": "2025-05-19T15:30:07.001+00:00",
+            "birthday": null,
+            "totalGamesWon": 0,
+            "totalGamesLost": 0,
+            "totalGamesPlayed": 0
+        }
+    ]
+}
 }
 ```
 
@@ -250,8 +283,6 @@ Content-Type: application/json
 
 {
   "id": 2,
-  "username": "player2",
-  "token": "user-token"
 }
 ```
 
@@ -280,12 +311,19 @@ Authorization: Bearer {token}
 Content-Type: application/json
 
 {
-  "type": "MOVE_PAWN",
-  "endPosition": [2, 8],
+  "startPosition": [
+    0,
+    8
+  ],
+  "endPosition": [
+    0,
+    10
+  ],
   "user": {
-    "id": 1,
-    "username": "player1"
-  }
+    "id": 2,
+    "username": "player2"
+  },
+  "type": "MOVE_PAWN"
 }
 ```
 
@@ -296,13 +334,13 @@ Authorization: Bearer {token}
 Content-Type: application/json
 
 {
-  "type": "ADD_WALL",
-  "wallPosition": [3, 7],
-  "wallOrientation": "HORIZONTAL",
-  "user": {
+    "wallPosition": [3, 7],
+    "user": {
     "id": 1,
     "username": "player1"
-  }
+    }
+    "type": "ADD_WALL",
+    "wallOrientation": "HORIZONTAL"
 }
 ```
 
@@ -329,16 +367,16 @@ Authorization: Bearer {token}
 **Response (200 OK):**
 ```json
 {
-  "id": 1,
-  "name": "John Doe",
-  "username": "john_doe",
-  "status": "ONLINE",
-  "creationDate": "2024-01-15T10:30:00.000Z",
-  "birthday": "1995-05-20T00:00:00.000Z",
-  "totalGamesPlayed": 15,
-  "totalGamesWon": 8,
-  "totalGamesLost": 7,
-  "token": "auth-token-here"
+    "id": 2,
+    "name": "Test Player 1",
+    "username": "player1",
+    "status": "ONLINE",
+    "creationDate": "2025-05-19T15:30:07.001+00:00",
+    "birthday": null,
+    "token": "f2b6f0b5-315a-4be1-9440-c8f58b4b79b2",
+    "totalGamesPlayed": 0,
+    "totalGamesWon": 0,
+    "totalGamesLost": 0
 }
 ```
 
