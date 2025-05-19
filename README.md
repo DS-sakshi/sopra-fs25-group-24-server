@@ -907,7 +907,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-This project is developed as part of the Software Praktikum course at the University of Zurich.
 ---
 
 For more information about the client-side implementation, see the [client repository](https://github.com/DS-sakshi/sopra-fs25-group-24-client).
