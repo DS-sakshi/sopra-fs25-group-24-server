@@ -34,7 +34,7 @@ public class RefreshWebSocketHandler extends TextWebSocketHandler {
                     session.sendMessage(refreshMessage);
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+               LOGGER.log("Error", e);
             }
         }
     }
