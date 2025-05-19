@@ -7,14 +7,13 @@ An online multiplayer implementation of the classic board game Quoridor, built w
 - [Features](#features)
 - [Technologies](#technologies)
 - [High-Level Components](#high-level-components)
-- [Launch & Deployment](#launch--deployment)
 - [Project Structure](#project-structure)
+- [Launch & Deployment](#launch--deployment)
 - [API Documentation](#api-documentation)
 - [Database Schema](#database-schema)
 - [Detailed Component Documentation](#detailed-component-documentation)
 - [Game Logic Implementation](#game-logic-implementation)
 - [Real-time Updates](#real-time-updates)
-- [Testing](#testing)
 - [Roadmap](#roadmap)
 - [Authors and Acknowledgment](#authors-and-acknowledgment)
 - [License](#license)
@@ -134,7 +133,7 @@ src/main/java/ch/uzh/ifi/hase/soprafs24/
     └── WebSocketConfig.java
 ```
 
-## Getting Started
+## Launch & Deployment
 
 ### Prerequisites
 
@@ -873,7 +872,7 @@ The server uses Breadth-First Search (BFS) to validate wall placements:
 
 The application is configured for deployment on cloud platforms. Environment-specific configurations should be managed through application properties.
 
-## Team
+## Authors and acknowledgment
 
 **Group 24 - SoPra FS25**
 
@@ -886,8 +885,29 @@ The application is configured for deployment on cloud platforms. Environment-spe
 
 ## License
 
-This project is developed as part of the Software Praktikum course at the University of Zurich.
+MIT License
 
+Copyright (c) [2025] [SoPra FS25 Group 24 - University of Zürich]
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+This project is developed as part of the Software Praktikum course at the University of Zurich.
 ---
 
-For more information about the client-side implementation, see the [client repository](https://github.com/HASEL-UZH/sopra-fs25-template-client).
+For more information about the client-side implementation, see the [client repository](https://github.com/DS-sakshi/sopra-fs25-group-24-client).
