@@ -9,9 +9,13 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Component
 public class RefreshWebSocketHandler extends TextWebSocketHandler {
 
+    private static final Logger logger = LoggerFactory.getLogger(RefreshWebSocketHandler.class);
     private final List<WebSocketSession> sessions = new CopyOnWriteArrayList<>();
 
     @Override
@@ -34,7 +38,7 @@ public class RefreshWebSocketHandler extends TextWebSocketHandler {
                     session.sendMessage(refreshMessage);
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+               logger.error("Error", e);
             }
         }
     }
