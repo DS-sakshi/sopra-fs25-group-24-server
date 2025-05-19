@@ -5,14 +5,19 @@ An online multiplayer implementation of the classic board game Quoridor, built w
 ## Table of Contents
 - [Overview](#overview)
 - [Features](#features)
-- [Tech Stack](#tech-stack)
+- [Technologies](#technologies)
+- [High-Level Components](#high-level-components)
+- [Launch & Deployment](#launch--deployment)
 - [Project Structure](#project-structure)
-- [Getting Started](#getting-started)
 - [API Documentation](#api-documentation)
 - [Database Schema](#database-schema)
+- [Detailed Component Documentation](#detailed-component-documentation)
+- [Game Logic Implementation](#game-logic-implementation)
+- [Real-time Updates](#real-time-updates)
 - [Testing](#testing)
-- [Development](#development)
-- [Team](#team)
+- [Roadmap](#roadmap)
+- [Authors and Acknowledgment](#authors-and-acknowledgment)
+- [License](#license)
 
 ## Overview
 
@@ -42,15 +47,51 @@ Quoridor is a strategic board game where players race to reach the opposite side
 - Real-time game state synchronization
 - Game forfeit functionality
 
-## Tech Stack
+## Technologies
 
-- **Framework**: Spring Boot 2.7+
-- **Language**: Java 17
-- **Database**: H2 (development) / PostgreSQL (production)
-- **Build Tool**: Gradle
-- **Real-time Communication**: WebSockets
-- **Testing**: JUnit 5, Mockito
-- **Authentication**: Token-based
+- **Framework**: Spring Boot 2.7+ - For rapid, production-ready application development
+- **Language**: Java 17 - Latest LTS version with modern language features
+- **Database**: H2 (development) - Lightweight database
+- **Build Tool**: Gradle 7.0+ - Dependency management and build automation
+- **Real-time Communication**: WebSockets - For live game state synchronization
+- **Testing**: JUnit 5, Mockito - Comprehensive testing framework
+- **Authentication**: Token-based - Secure user session management
+- **ORM**: JPA/Hibernate - Object-relational mapping for database operations
+- **API Documentation**: REST endpoints with comprehensive error handling
+
+## High-Level Components
+
+### 1. [Game Management System](src/main/java/ch/uzh/ifi/hase/soprafs24/service/GameService.java)
+**Role**: Core game logic and state management
+- Handles game creation, player joining, and turn progression
+- Manages game lifecycle from creation to completion
+- Integrates with move validation and user statistics
+
+### 2. [Move Validation Engine](src/main/java/ch/uzh/ifi/hase/soprafs24/service/MoveService.java)
+**Role**: Ensures game rule compliance and fair play
+- Validates pawn movements including jumping mechanics
+- Implements pathfinding algorithm to prevent game-breaking wall placements
+- Enforces Quoridor rules for both basic and complex moves
+
+### 3. [User Authentication & Management](src/main/java/ch/uzh/ifi/hase/soprafs24/service/UserService.java)
+**Role**: Handles all user-related operations
+- Manages registration, login, and profile updates
+- Tracks game statistics and user status
+- Provides security through token-based authentication
+
+### 4. [Real-time Communication Layer](src/main/java/ch/uzh/ifi/hase/soprafs24/websocket/)
+**Role**: Enables live multiplayer experience
+- WebSocket handler for instant game state updates
+- Broadcasts game events to all connected players
+- Maintains connection management for multiplayer sessions
+
+### 5. [REST API Controllers](src/main/java/ch/uzh/ifi/hase/soprafs24/controller/)
+**Role**: HTTP request handling and API endpoints
+- Game operations (create, join, move, forfeit)
+- User operations (register, login, profile management)
+- Coordinates between frontend requests and backend services
+
+**Component Correlation**: The controllers receive HTTP requests and delegate to appropriate services. The GameService orchestrates game flow while utilizing MoveService for validation. UserService manages authentication used across all game operations. The WebSocket layer broadcasts updates triggered by successful game operations, creating a seamless real-time experience.
 
 ## Project Structure
 
@@ -93,6 +134,51 @@ src/main/java/ch/uzh/ifi/hase/soprafs24/
     └── WebSocketConfig.java
 ```
 
+## Getting Started
+
+### Prerequisites
+
+- Java 17 or higher
+- Gradle 7.0+
+- Git
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/sopra-fs25-group-24-server.git
+   cd sopra-fs25-group-24-server
+   ```
+
+2. **Build the project**
+   ```bash
+   ./gradlew build
+   ```
+
+3. **Run the application**
+   ```bash
+   ./gradlew bootRun
+   ```
+
+4. **Verify the server is running**
+   Visit `http://localhost:8080` in your browser
+
+### Development Mode
+
+For development with automatic reloading:
+
+```bash
+# Terminal 1: Continuous build
+./gradlew build --continuous
+
+# Terminal 2: Run application
+./gradlew bootRun
+```
+
+To skip tests during development:
+```bash
+./gradlew build --continuous -xtest
+```
 
 ## API Documentation
 
@@ -141,9 +227,50 @@ Content-Type: application/json
 }
 ```
 
+**Response (201 Created):**
+```json
+{
+  "id": 1,
+  "numberUsers": 2,
+  "sizeBoard": 9,
+  "timeLimit": 60,
+  "gameStatus": "WAITING_FOR_USER",
+  "creator": {
+    "id": 1,
+    "username": "player1"
+  },
+  "currentUsers": [...]
+}
+```
+
 #### Join Game
 ```http
 PUT /game-lobby/{gameId}/join
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "id": 2,
+  "username": "player2",
+  "token": "user-token"
+}
+```
+
+#### Get Game Details
+```http
+GET /game-lobby/{gameId}
+Authorization: Bearer {token}
+```
+
+#### Get Game Pawns
+```http
+GET /game-lobby/{gameId}/pawns
+Authorization: Bearer {token}
+```
+
+#### Get Game Walls
+```http
+GET /game-lobby/{gameId}/walls
 Authorization: Bearer {token}
 ```
 
@@ -154,23 +281,41 @@ Authorization: Bearer {token}
 Content-Type: application/json
 
 {
-  "fromRow": 0,
-  "fromCol": 4,
-  "toRow": 1,
-  "toCol": 4
+  "type": "MOVE_PAWN",
+  "endPosition": [2, 8],
+  "user": {
+    "id": 1,
+    "username": "player1"
+  }
 }
 ```
 
 #### Place Wall
 ```http
-POST /game-lobby/{gameId}/wall
+POST /game-lobby/{gameId}/move
 Authorization: Bearer {token}
 Content-Type: application/json
 
 {
-  "row": 2,
-  "col": 3,
-  "orientation": "HORIZONTAL"
+  "type": "ADD_WALL",
+  "wallPosition": [3, 7],
+  "wallOrientation": "HORIZONTAL",
+  "user": {
+    "id": 1,
+    "username": "player1"
+  }
+}
+```
+
+#### Forfeit Game
+```http
+DELETE /game-lobby/{gameId}
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "id": 1,
+  "username": "player1"
 }
 ```
 
@@ -178,20 +323,73 @@ Content-Type: application/json
 
 #### Get User Profile
 ```http
-GET /edit-profile/{userId}
+GET /users/{userId}
 Authorization: Bearer {token}
+```
+
+**Response (200 OK):**
+```json
+{
+  "id": 1,
+  "name": "John Doe",
+  "username": "john_doe",
+  "status": "ONLINE",
+  "creationDate": "2024-01-15T10:30:00.000Z",
+  "birthday": "1995-05-20T00:00:00.000Z",
+  "totalGamesPlayed": 15,
+  "totalGamesWon": 8,
+  "totalGamesLost": 7,
+  "token": "auth-token-here"
+}
 ```
 
 #### Update User Profile
 ```http
-PUT /edit-profile/{userId}
+PUT /users/{userId}
 Authorization: Bearer {token}
+CurrentUserId: {currentUserId}
 Content-Type: application/json
 
 {
-  "username": "newUsername"
+  "username": "new_username",
+  "birthday": "1995-05-20T00:00:00.000Z"
 }
 ```
+
+#### Get All Users
+```http
+GET /users
+Authorization: Bearer {token}
+```
+
+### WebSocket Endpoint
+
+#### Real-time Game Updates
+```
+WebSocket URL: ws://localhost:8080/refresh-websocket
+```
+
+**Message Format:**
+```json
+{
+  "type": "refresh",
+  "gameId": "123"
+}
+```
+
+### Response Status Codes
+
+| Status | Description |
+|--------|-------------|
+| 200 | OK - Request successful |
+| 201 | Created - Resource created successfully |
+| 204 | No Content - Request successful, no content to return |
+| 400 | Bad Request - Invalid request parameters |
+| 401 | Unauthorized - Authentication required |
+| 403 | Forbidden - Access denied |
+| 404 | Not Found - Resource not found |
+| 409 | Conflict - Resource already exists or constraint violation |
+| 500 | Internal Server Error - Server error |
 
 ## Database Schema
 
@@ -348,9 +546,9 @@ Non-persistent entity representing a player's move action.
 
 **Key Attributes:**
 - `type`: MOVE_PAWN or ADD_WALL
-- `endPosition`: Target position for pawn moves [row, col]
-- `wallPosition`: Position for wall placement [row, col]
-- `wallOrientation`: Orientation for wall placement [VERTICAL, HORIZONTAL]
+- `endPosition`: Target position for pawn moves
+- `wallPosition`: Position for wall placement
+- `wallOrientation`: Orientation for wall placement
 - `user`: Player making the move
 
 ### Services (`service/`)
@@ -437,17 +635,65 @@ JPA repository for Wall entities.
 - `findByBoardId(long boardId)`: Finds all walls on specific board
 - `findByBoardIdAndUserId(long boardId, long userId)`: Finds walls placed by specific user
 
-### WebSocket (`websocket/`)
+### DTOs (Data Transfer Objects) (`rest/dto/`)
 
-#### RefreshWebSocketHandler.java
-Handles real-time communication for game state updates.
+#### GameGetDTO & GamePostDTO
+Transfer objects for game information retrieval and creation.
+- **Fields**: `id`, `numberUsers`, `sizeBoard`, `timeLimit`, `gameStatus`, `creator`, `currentUsers`
+- **Usage**: API responses for game queries and game creation requests
+
+#### UserGetDTO, UserPostDTO & UserPutDTO
+Handle user data transfer for different operations.
+- **UserGetDTO**: Complete user profile including statistics (`totalGamesWon`, `totalGamesLost`, `totalGamesPlayed`)
+- **UserPostDTO**: User registration data (`username`, `password`, `name`, `birthday`)
+- **UserPutDTO**: Profile update data (`username`, `birthday`)
+
+#### MovePostDTO
+Encapsulates player move requests.
+- **Fields**: `type` (MOVE_PAWN/ADD_WALL), `endPosition`, `wallPosition`, `wallOrientation`, `user`
+- **Usage**: Handles both pawn movements and wall placements in a single DTO
+
+#### PawnGetDTO & WallGetDTO
+Transfer objects for game board elements.
+- **PawnGetDTO**: Position (`r`, `c`), `color`, `userId`, `boardId`
+- **WallGetDTO**: Position (`r`, `c`), `orientation`, `color`, `userId`, `boardId`
+
+#### GameStatusDTO
+Lightweight DTO for game state updates.
+- **Fields**: `id`, `currentTurn`, `gameStatus`
+- **Usage**: WebSocket updates and turn progression notifications
+
+### Data Mapping (`rest/mapper/`)
+
+#### DTOMapper
+MapStruct-based interface for automatic entity-DTO conversion.
+
+**Key Mappings:**
+- `convertEntityToUserGetDTO(User user)`: Entity to API response
+- `convertUserPostDTOtoEntity(UserPostDTO dto)`: API request to entity
+- `convertMovePostDTOtoEntity(MovePostDTO dto)`: Move request processing
+- `updateUserFromDTO(UserPutDTO dto, User user)`: Profile updates
+
+### Exception Handling (`exceptions/`)
+
+#### GlobalExceptionAdvice
+Centralized exception handling for consistent API responses.
 
 **Key Functions:**
-- `broadcastRefresh(String gameId)`: Sends refresh signal to connected clients
-- WebSocket session management for real-time updates
+- `handleResponseStatusException()`: Custom error responses with proper HTTP status codes
+- `handleConflict()`: Business logic conflicts (e.g., duplicate usernames)
+- `handleTransactionSystemException()`: Database transaction errors
 
-#### WebSocketConfig.java
-Configures WebSocket endpoints and handlers for real-time communication.
+**Error Response Format:**
+```json
+{
+  "timestamp": 1640995200000,
+  "status": 400,
+  "error": "Bad Request",
+  "message": "Invalid pawn move.",
+  "path": "/game-lobby/1/move"
+}
+```
 
 ## Game Logic Implementation
 
@@ -568,19 +814,44 @@ The server uses Breadth-First Search (BFS) to validate wall placements:
 - Caching of game state during operations
 - Optimized pathfinding algorithms
 
-## Development Notes
+## Roadmap
 
-### Current Limitations
-- Currently supports 2-player games (4-player in development)
-- Fixed board size of 9x9 (customization planned)
-- Basic error handling (enhanced error messages planned)
+### High-Priority Features for New Contributors
+
+#### 1. 4-Player Game Support
+**Description**: Extend the current 2-player system to support 4-player games
+- **Implementation**: Modify game creation to accept player count parameter
+- **Complexity**: Medium - requires turn management updates and board logic changes
+- **Files to modify**: `GameService.java`, `MoveService.java`, game creation endpoints
+- **Benefits**: Significantly expands gameplay possibilities
+
+#### 2. Dynamic Board Sizes
+**Description**: Allow players to choose board sizes (7x7, 9x9, 11x11)
+- **Implementation**: Make board size configurable during game creation
+- **Complexity**: Medium - affects coordinate systems and pathfinding
+- **Files to modify**: `Board.java`, `GameService.java`, move validation logic
+- **Benefits**: Provides variety and different game experiences
+
+#### 3. Move Time Limits
+**Description**: Add optional time constraints per move to increase game pace
+- **Implementation**: Implement timer system with automatic turn progression
+- **Complexity**: High - requires timer management and WebSocket notifications
+- **Files to modify**: `GameService.java`, WebSocket handlers, frontend integration
+- **Benefits**: Creates more dynamic and competitive gameplay
 
 ### Future Enhancements
-- Variable board sizes (7x7, 11x11)
-- Time limits per move
-- Game history tracking
-- Spectator mode
-- Enhanced statistics
+- **Spectator Mode**: Allow users to watch ongoing games
+- **Game History & Replay**: Store and replay completed games
+- **Enhanced Statistics**: Detailed performance analytics
+- **Tournament System**: Organize competitive events
+- **AI Opponent**: Single-player mode with computer opponent
+
+### Technical Improvements
+- **Performance Optimization**: Database query optimization and caching
+- **Stable Database**: Introduce a more robust Database
+- **Enhanced Security**: Rate limiting and advanced authentication
+- **Mobile Responsiveness**: Optimized mobile game interface
+- **Internationalization**: Multi-language support
 
 ## Development
 
@@ -611,10 +882,12 @@ The application is configured for deployment on cloud platforms. Environment-spe
 - **Sakshi Chaudhari** (24-744-716) - GitHub: [@DS-sakshi](https://github.com/DS-sakshi)
 - **Dora Silva** (20-934-402) - GitHub: [@DorSilva](https://github.com/DorSilva)
 
+**Supervisor**: Silvan Schlegel
+
 ## License
 
 This project is developed as part of the Software Praktikum course at the University of Zurich.
 
 ---
 
-For more information about the client-side implementation, see the [client repository](https://github.com/DS-sakshi/sopra-fs25-group-24-client).
+For more information about the client-side implementation, see the [client repository](https://github.com/HASEL-UZH/sopra-fs25-template-client).
