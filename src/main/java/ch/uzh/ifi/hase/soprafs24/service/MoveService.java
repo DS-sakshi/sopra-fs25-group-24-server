@@ -45,12 +45,12 @@ public class MoveService {
         Queue<int[]> queue = new LinkedList<>();
         queue.add(new int[]{startR, startC});
         visited[startR][startC] = true;
-    
+
         while (!queue.isEmpty()) {
             int[] current = queue.poll();
             int r = current[0];
             int c = current[1];
-    
+
             log.error("Checking position r={}, c={}", r, c);
             
             // Winning Condition
@@ -58,40 +58,87 @@ public class MoveService {
                 log.error("Found path to goal!");
                 return true;
             }
-    
+
             // Check all possible moves
             int[][] directions = {{0, 2}, {0, -2}, {2, 0}, {-2, 0}};
             for (int[] dir : directions) {  
                 int newR = r + dir[0];
                 int newC = c + dir[1];
 
-                if ((newR < 0) || (newR >= boardSize) ||
-                (newC < 0) || (newC >= boardSize)) {
-                    log.error("Position out of bounds: r={}, c={}", newR, newC);
+                // Skip if out of bounds
+                if (newR < 0 || newR >= boardSize || newC < 0 || newC >= boardSize) {
                     continue;
                 }
                 
+                // Skip if already visited
                 if (visited[newR][newC]) {
-                    log.error("Already visited position r={}, c={}", newR, newC);
                     continue;
                 }
 
-                log.error("Checking position r={}, c={}", newR, newC);
-    
+                // Check if there's a pawn at the target position
+                boolean pawnAtTarget = false;
+                for (Pawn otherPawn : board.getPawns()) {
+                    if (otherPawn.getR() == newR && otherPawn.getC() == newC) {
+                        pawnAtTarget = true;
+                        
+                        // Try to jump over this pawn
+                        int jumpR = newR + dir[0];
+                        int jumpC = newC + dir[1];
+                        
+                        // Check if jump is valid (within bounds and not blocked by wall)
+                        if (jumpR >= 0 && jumpR < boardSize && 
+                            jumpC >= 0 && jumpC < boardSize && 
+                            !visited[jumpR][jumpC] &&
+                            !isWallBlockingPath(newR, newC, jumpR, jumpC, walls)) {
+                            
+                            visited[jumpR][jumpC] = true;
+                            queue.add(new int[]{jumpR, jumpC});
+                            log.error("Jumped to and added to queue r={}, c={}", jumpR, jumpC);
+                        } 
+                        // If can't jump straight, try diagonal jumps
+                        else if (isWallBlockingPath(newR, newC, jumpR, jumpC, walls)) {
+                            // Try diagonal jumps (perpendicular to the move direction)
+                            // For vertical movement, try horizontal diagonals
+                            if (dir[0] != 0) {
+                                tryDiagonalJump(r, c, newR, newC, newR, newC + 2, boardSize, visited, queue, walls);
+                                tryDiagonalJump(r, c, newR, newC, newR, newC - 2, boardSize, visited, queue, walls);
+                            }
+                            // For horizontal movement, try vertical diagonals
+                            else {
+                                tryDiagonalJump(r, c, newR, newC, newR + 2, newC, boardSize, visited, queue, walls);
+                                tryDiagonalJump(r, c, newR, newC, newR - 2, newC, boardSize, visited, queue, walls);
+                            }
+                        }
+                        break;
+                    }
+                }
 
-                    
-                if (isValidPawnMoveHasPath(board, pawn, newR, newC,r, c ,walls)) {
+                // If no pawn and move is valid, add to queue
+                if (!pawnAtTarget && !isWallBlockingPath(r, c, newR, newC, walls)) {
                     visited[newR][newC] = true;
                     queue.add(new int[]{newR, newC});
                     log.error("Added to queue r={}, c={}", newR, newC);
-                } 
-
+                }
             }
-            
         }
         
         log.error("No path found to goal!");
         return false;
+    }
+
+    // Helper method for diagonal jumps
+    private void tryDiagonalJump(int startR, int startC, int pawnR, int pawnC, int diagR, int diagC, 
+                            int boardSize, boolean[][] visited, Queue<int[]> queue, List<Wall> walls) {
+        // Check if diagonal position is valid
+        if (diagR >= 0 && diagR < boardSize && 
+            diagC >= 0 && diagC < boardSize && 
+            !visited[diagR][diagC] && 
+            !isWallBlockingPath(pawnR, pawnC, diagR, diagC, walls)) {
+            
+            visited[diagR][diagC] = true;
+            queue.add(new int[]{diagR, diagC});
+            log.error("Added diagonal jump to queue r={}, c={}", diagR, diagC);
+        }
     }
 
 
