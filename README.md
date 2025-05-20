@@ -18,45 +18,25 @@ An online multiplayer implementation of the classic board game Quoridor, built w
 - [Authors and Acknowledgment](#authors-and-acknowledgment)
 - [License](#license)
 
-## Overview
+## Introduction 
 
-Quoridor is a strategic board game where players race to reach the opposite side of the board while strategically placing walls to block opponents. This digital implementation supports:
+Quoridor Online is a digital adaptation of the classic board game Quoridor, designed to connect players across geographical distances. The game challenges players to strategically navigate their pawns to the opposite side of the board while placing walls to obstruct opponents. Our implementation offers a web-based platform where users can register, create profiles, and engage in turn-based gameplay with friends or other online players. 
 
-- 2-player games
-- Real-time multiplayer functionality
-- User management and statistics
-- WebSocket-based real-time updates
-
-## Features
-
-### Core Gameplay
-- **Pawn Movement**: Move pawns one square at a time toward the goal
-- **Wall Placement**: Strategically place walls to block opponents
-- **Jump Mechanics**: Jump over adjacent pawns when possible
-- **Path Validation**: Ensures no player can be completely blocked
-- **Turn Management**: Automated turn-based gameplay
-
-### User Management
-- User registration and authentication
-- Profile management with statistics
-- Online status management
-
-### Game Features
-- Create and join game lobbies
-- Real-time game state synchronization
-- Game forfeit functionality
+The motivation behind this project was to create an accessible version of a beloved board game that preserves its strategic depth while adding digital enhancements like customizable board sizes, time limits, and an AI chatbot assistant to help new players learn the rules and strategies. 
 
 ## Technologies
 
-- **Framework**: Spring Boot 2.7+ - For rapid, production-ready application development
+- **Framework**: Spring Boot 2.7+ - For rapid, production-ready application development. For Frontend React framework Next.js
 - **Language**: Java 17 - Latest LTS version with modern language features
 - **Database**: H2 (development) - Lightweight database
-- **Build Tool**: Gradle 7.0+ - Dependency management and build automation
-- **Real-time Communication**: WebSockets - For live game state synchronization
-- **Testing**: JUnit 5, Mockito - Comprehensive testing framework
+- **Build Tool**: Gradle 7.0+ - Dependency management and build automation. Docker: used to simplify building, testing and deploying application
+- **Testing**: JUnit 5, Mockito - Comprehensive testing framework. SonarQube to measure Code Quality
 - **Authentication**: Token-based - Secure user session management
 - **ORM**: JPA/Hibernate - Object-relational mapping for database operations
-- **API Documentation**: REST endpoints with comprehensive error handling
+- **connection Client and Server**: REST endpoints with comprehensive error handling. WebSockets - For live game state synchronization
+- **Deployment**: Google Cloud: handling server deployment. Vercel: handling client deployment and hosting client
+- **External APIs**: WHICH ????
+
 
 ## High-Level Components
 
@@ -92,47 +72,6 @@ Quoridor is a strategic board game where players race to reach the opposite side
 
 **Component Correlation**: The controllers receive HTTP requests and delegate to appropriate services. The GameService orchestrates game flow while utilizing MoveService for validation. UserService manages authentication used across all game operations. The WebSocket layer broadcasts updates triggered by successful game operations, creating a seamless real-time experience.
 
-## Project Structure
-
-```
-src/main/java/ch/uzh/ifi/hase/soprafs24/
-├── Application.java                 # Main Spring Boot application
-├── constant/                        # Enums and constants
-│   ├── GameStatus.java
-│   ├── MoveType.java
-│   ├── UserStatus.java
-│   └── WallOrientation.java
-├── controller/                      # REST controllers
-│   ├── GameController.java
-│   ├── RefreshController.java
-│   └── UserController.java
-├── entity/                         # JPA entities
-│   ├── Board.java
-│   ├── Game.java
-│   ├── Move.java
-│   ├── Pawn.java
-│   ├── User.java
-│   └── Wall.java
-├── exceptions/                     # Exception handling
-│   └── GlobalExceptionAdvice.java
-├── repository/                     # Data access layer
-│   ├── BoardRepository.java
-│   ├── GameRepository.java
-│   ├── PawnRepository.java
-│   ├── UserRepository.java
-│   └── WallRepository.java
-├── rest/                          # DTOs and mappers
-│   ├── dto/
-│   └── mapper/
-├── service/                       # Business logic
-│   ├── GameService.java
-│   ├── MoveService.java
-│   └── UserService.java
-└── websocket/                     # WebSocket configuration
-    ├── RefreshWebSocketHandler.java
-    └── WebSocketConfig.java
-```
-
 ## Launch & Deployment
 
 ### Prerequisites
@@ -161,7 +100,8 @@ src/main/java/ch/uzh/ifi/hase/soprafs24/
    ```bash
    ./gradlew bootRun
    ```
-
+how can we just run TESTS ??
+How can they do releases?
 4. **Verify the server is running**
    Visit `http://localhost:8080` in your browser
 
