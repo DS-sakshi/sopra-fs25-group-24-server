@@ -19,7 +19,7 @@ public class Application {
   @GetMapping(value = "/", produces = MediaType.TEXT_PLAIN_VALUE)
   @ResponseStatus(HttpStatus.OK)
   public String helloWorld() {
-    return "The application is running.";
+    return "The application is running. This is the right Application.";
   }
 
  @Bean
