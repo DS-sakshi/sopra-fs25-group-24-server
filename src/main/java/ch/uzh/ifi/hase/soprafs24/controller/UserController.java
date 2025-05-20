@@ -34,7 +34,10 @@ public class UserController {
 
     @GetMapping("/users")
     @ResponseStatus(HttpStatus.OK)
-    public List<UserGetDTO> getAllUsers() {
+    public List<UserGetDTO> getAllUsers( @RequestHeader(value = "Authorization", required = true) String token) {
+        //check Auth
+        userService.isValidToken(token);  
+        
         // fetch all users in the internal representation
         List<User> users = userService.getUsers();
         List<UserGetDTO> userGetDTOs = new ArrayList<>();
@@ -48,7 +51,10 @@ public class UserController {
 
     @GetMapping("/users/{userId}")
     @ResponseStatus(HttpStatus.OK)
-    public UserGetDTO getUser(@PathVariable Long userId) {
+    public UserGetDTO getUser(@PathVariable Long userId,  @RequestHeader(value = "Authorization", required = true) String token) {
+        //check Auth
+        userService.isValidToken(token);        
+        
         // fetch user by id
         User user = userService.getUserById(userId);
         return DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
@@ -57,6 +63,7 @@ public class UserController {
     @PostMapping("/users")
     @ResponseStatus(HttpStatus.CREATED)
     public UserGetDTO createUser(@RequestBody UserPostDTO userPostDTO) {
+
         // convert API user to internal representation
         User userInput = DTOMapper.INSTANCE.convertUserPostDTOtoEntity(userPostDTO);
 
@@ -72,7 +79,10 @@ public class UserController {
     public void updateUser(
             @PathVariable Long userId,
             @RequestBody UserPutDTO userPutDTO,
-            @RequestHeader(value = "CurrentUserId", required = false) String currentUserIdStr) {
+            @RequestHeader(value = "CurrentUserId", required = false) String currentUserIdStr,
+            @RequestHeader(value = "Authorization", required = true) String token) {
+        //check Auth
+        userService.isValidToken(token);
 
         log.info("Received PUT request to update user {} with CurrentUserId header: {}", userId, currentUserIdStr);
 
@@ -118,7 +128,10 @@ public class UserController {
 
     @PostMapping("/logout/{userId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void logoutUser(@PathVariable Long userId) {
+    public void logoutUser(@PathVariable Long userId,
+     @RequestHeader(value = "Authorization", required = true) String token) {
+        //check Auth
+        userService.isValidToken(token);
         // logout user
         userService.logoutUser(userId);
     }

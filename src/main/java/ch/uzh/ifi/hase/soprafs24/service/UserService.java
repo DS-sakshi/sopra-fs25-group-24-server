@@ -137,8 +137,6 @@ public class UserService {
             }
         }
 
-        DTOMapper.INSTANCE.updateUserFromDTO(userPutDTO, user);
-
         // Save updated user
         user = userRepository.save(user);
         userRepository.flush();
@@ -155,14 +153,11 @@ public class UserService {
                     "Username not found");
         }
 
-        // In a real application, you would check the password hash here
-        // For this exercise, we'll just do a simple string comparison
         if (!user.getPassword().equals(password)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
                     "Invalid password");
         }
 
-        // Set user to online
         user.setStatus(UserStatus.ONLINE);
         userRepository.save(user);
         userRepository.flush();
@@ -194,7 +189,7 @@ public class UserService {
         User userByToken = userRepository.findByToken(token);
         
         // Check if user exists and is in ONLINE status
-        boolean isValid = userByToken != null && userByToken.getStatus() == UserStatus.ONLINE;
+        boolean isValid = (userByToken != null && userByToken.getStatus() == UserStatus.ONLINE);
         
         if (!isValid && userByToken != null) {
             log.debug("Token validation failed: User {} is not ONLINE", userByToken.getId());

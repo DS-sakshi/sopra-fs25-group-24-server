@@ -66,6 +66,7 @@ public class GameControllerTest {
         user.setName("Test User");
         user.setUsername("testUsername");
         user.setStatus(UserStatus.ONLINE);
+        String token = "1";
 
         Game game = new Game();
         game.setId(1L);
@@ -80,7 +81,8 @@ public class GameControllerTest {
         given(gameService.getGames()).willReturn(allGames);
 
         // when/then
-        mockMvc.perform(get("/game-lobby"))
+        mockMvc.perform(get("/game-lobby")
+            .header("Authorization", "Bearer " + token))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(1)))
             .andExpect(jsonPath("$[0].id", is(1)))
@@ -100,11 +102,13 @@ public class GameControllerTest {
     @Test
     public void createGame_validInput_userCreated() throws Exception {
         // given
+        String token = "1";
+
         User user = new User();
         user.setId(1L);
         user.setName("Test User");
         user.setUsername("testUsername");
-        user.setToken("1");
+        user.setToken(token);
         user.setStatus(UserStatus.ONLINE);
         user.setCreationDate(new Date());
 
@@ -125,7 +129,8 @@ public class GameControllerTest {
         // when/then -> do the request + validate the result
         MockHttpServletRequestBuilder postRequest = post("/game-lobby")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(asJsonString(userGetDTO));
+                .content(asJsonString(userGetDTO))
+                .header("Authorization", "Bearer " + token);
 
         // then
         mockMvc.perform(postRequest)
@@ -144,6 +149,7 @@ public class GameControllerTest {
     @Test
     public void createGame_UserNotFound() throws Exception {
         // given
+        String token = "1";
         UserGetDTO userGetDTO = new UserGetDTO();
         userGetDTO.setId(1L);
         userGetDTO.setName("Nonexistent User");
@@ -158,7 +164,8 @@ public class GameControllerTest {
         // when/then -> do the request + validate the result
         MockHttpServletRequestBuilder postRequest = post("/game-lobby")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(asJsonString(userGetDTO));
+                .content(asJsonString(userGetDTO))
+                .header("Authorization", "Bearer " + token);
     
         // Expect 404 Not Found status
         mockMvc.perform(postRequest)
@@ -175,13 +182,15 @@ public class GameControllerTest {
         user.setName("Joining User");
         user.setUsername("joiningUser");
         user.setStatus(UserStatus.ONLINE);
+        String token = "1";
 
         UserGetDTO userGetDTO = DTOMapper.INSTANCE.convertEntityToUserGetDTO(user);
 
         // when/then
         MockHttpServletRequestBuilder putRequest = put("/game-lobby/{gameId}/join", gameId)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(asJsonString(userGetDTO));
+                .content(asJsonString(userGetDTO))
+                .header("Authorization", "Bearer " + token);
 
         mockMvc.perform(putRequest)
             .andExpect(status().isNoContent());
@@ -193,6 +202,7 @@ public class GameControllerTest {
     @Test
     public void joinGame_gameNotFound() throws Exception {
         // given
+        String token = "1";
         Long gameId = 999L;
         User user = new User();
         user.setId(2L);
@@ -208,7 +218,8 @@ public class GameControllerTest {
         // when/then
         MockHttpServletRequestBuilder putRequest = put("/game-lobby/{gameId}/join", gameId)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(asJsonString(userGetDTO));
+                .content(asJsonString(userGetDTO))
+                .header("Authorization", "Bearer " + token);
 
         mockMvc.perform(putRequest)
             .andExpect(status().isNotFound());
@@ -230,10 +241,12 @@ public class GameControllerTest {
         game.setCreator(user);
         game.setGameStatus(GameStatus.WAITING_FOR_USER);
         game.setCurrentUsers(Set.of(user));
+        String token = "1";
 
         given(gameService.getGame(1L)).willReturn(game);
 
-        mockMvc.perform(get("/game-lobby/1"))
+        mockMvc.perform(get("/game-lobby/1")
+        .header("Authorization", "Bearer " + token))
            .andExpect(status().isOk())
            .andExpect(jsonPath("$.id", is(1)))            
            .andExpect(jsonPath("$.numberUsers", is(2)))
@@ -250,8 +263,10 @@ public class GameControllerTest {
     @Test
     public void getGame_invalidId_throwsNotFound() throws Exception {
         given(gameService.getGame(999L)).willThrow(new ResponseStatusException(HttpStatus.NOT_FOUND));
+        String token = "1";
 
-        mockMvc.perform(get("/game-lobby/999"))
+        mockMvc.perform(get("/game-lobby/999")
+        .header("Authorization", "Bearer " + token))
            .andExpect(status().isNotFound());
         }
 
@@ -261,10 +276,12 @@ public class GameControllerTest {
         MovePostDTO moveDTO = new MovePostDTO();
         moveDTO.setType(MoveType.MOVE_PAWN);
         moveDTO.setEndPosition(List.of(2, 3));
+        String token = "1";
 
         mockMvc.perform(post("/game-lobby/1/move")
            .contentType(MediaType.APPLICATION_JSON)
-           .content(asJsonString(moveDTO)))
+           .content(asJsonString(moveDTO))
+           .header("Authorization", "Bearer " + token))
            .andExpect(status().isCreated());
     }
 
@@ -286,10 +303,12 @@ public class GameControllerTest {
     public void deleteGame_validRequest() throws Exception {
         UserGetDTO userDTO = new UserGetDTO();
         userDTO.setId(1L);
+        String token = "1";
     
         mockMvc.perform(delete("/game-lobby/1")
            .contentType(MediaType.APPLICATION_JSON)
-           .content(asJsonString(userDTO)))
+           .content(asJsonString(userDTO))
+           .header("Authorization", "Bearer " + token))
            .andExpect(status().isNoContent());
         }
 
@@ -300,13 +319,15 @@ public class GameControllerTest {
         userDTO.setId(1L);
         userDTO.setName("Test User");
         userDTO.setUsername("testUsername");
+        String token = "1";
     
         doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Game not found"))
             .when(gameService).delete(Mockito.eq(999L), Mockito.any(User.class));
     
         MockHttpServletRequestBuilder deleteRequest = delete("/game-lobby/{gameId}", 999L)
             .contentType(MediaType.APPLICATION_JSON)
-            .content(asJsonString(userDTO));
+            .content(asJsonString(userDTO))
+            .header("Authorization", "Bearer " + token);
     
         mockMvc.perform(deleteRequest)
             .andExpect(status().isNotFound());
@@ -322,12 +343,13 @@ public class GameControllerTest {
         wall.setC(3);
         wall.setOrientation(WallOrientation.HORIZONTAL);
         List<Wall> walls = Collections.singletonList(wall);
-        
+        String token = "1";
+
         // Mocking the service 
         given(gameService.getWalls(1L)).willReturn(walls);
 
         // when/then
-        mockMvc.perform(get("/game-lobby/1/walls"))
+        mockMvc.perform(get("/game-lobby/1/walls").header("Authorization", "Bearer " + token))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(1)))
             .andExpect(jsonPath("$[0].id", is(1)))
@@ -346,12 +368,14 @@ public class GameControllerTest {
         pawn.setC(6);
         pawn.setColor("BLUE");
         List<Pawn> pawns = Collections.singletonList(pawn);
+        String token = "1";
 
         // Mocking the service and DTO mapper
         given(gameService.getPawns(1L)).willReturn(pawns);
                  
         // when/then
-        mockMvc.perform(get("/game-lobby/1/pawns"))
+        mockMvc.perform(get("/game-lobby/1/pawns")
+        .header("Authorization", "Bearer " + token))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(1)))
             .andExpect(jsonPath("$[0].id", is(1)))
@@ -367,10 +391,12 @@ public class GameControllerTest {
         moveDTO.setType(MoveType.ADD_WALL);
         moveDTO.setWallPosition(List.of(4, 5));
         moveDTO.setWallOrientation("VERTICAL");
+        String token = "1";
 
         mockMvc.perform(post("/game-lobby/1/move")
             .contentType(MediaType.APPLICATION_JSON)
-            .content(asJsonString(moveDTO)))
+            .content(asJsonString(moveDTO))
+            .header("Authorization", "Bearer " + token))
             .andExpect(status().isCreated());
     }
 

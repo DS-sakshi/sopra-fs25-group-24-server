@@ -53,6 +53,8 @@ public class UserControllerTest {
         user.setUsername("firstname@lastname");
         user.setStatus(UserStatus.OFFLINE);
         user.setCreationDate(new Date());
+        String token = "1";
+        user.setToken(token);
 
         List<User> allUsers = Collections.singletonList(user);
 
@@ -61,7 +63,7 @@ public class UserControllerTest {
         given(userService.getUsers()).willReturn(allUsers);
 
         // when
-        MockHttpServletRequestBuilder getRequest = get("/users").contentType(MediaType.APPLICATION_JSON);
+        MockHttpServletRequestBuilder getRequest = get("/users").contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token);
 
         // then
         mockMvc.perform(getRequest).andExpect(status().isOk())
@@ -132,11 +134,12 @@ public class UserControllerTest {
     @Test
     public void getUserById_validId_userReturned() throws Exception {
         // given
+        String token = "1";
         User user = new User();
         user.setId(1L);
         user.setName("Test User");
         user.setUsername("testUsername");
-        user.setToken("1");
+        user.setToken(token);
         user.setStatus(UserStatus.ONLINE);
         user.setCreationDate(new Date());
 
@@ -144,7 +147,7 @@ public class UserControllerTest {
 
         // when/then -> do the request + validate the result
         MockHttpServletRequestBuilder getRequest = get("/users/1")
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token);
 
         // then
         mockMvc.perform(getRequest)
@@ -162,9 +165,11 @@ public class UserControllerTest {
         doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "User with ID 1 was not found"))
                 .when(userService).getUserById(1L);
 
+        String token = "1";
+
         // when/then -> do the request + validate the result
         MockHttpServletRequestBuilder getRequest = get("/users/1")
-                .contentType(MediaType.APPLICATION_JSON);
+                .contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token);
 
         // then
         mockMvc.perform(getRequest)
@@ -178,11 +183,15 @@ public class UserControllerTest {
         UserPutDTO userPutDTO = new UserPutDTO();
         userPutDTO.setUsername("newUsername");
         userPutDTO.setBirthday(new Date());
+        String token = "1";
+
 
         // when/then -> do the request + validate the result
         MockHttpServletRequestBuilder putRequest = put("/users/1")
                 .contentType(MediaType.APPLICATION_JSON)
-                .header("CurrentUserId", "1") // Important: Add CurrentUserId header
+                .header("CurrentUserId", "1")
+                .header("Authorization", "Bearer " + token)
+                 // Important: Add CurrentUserId header
                 .content(asJsonString(userPutDTO));
 
         // then
@@ -197,6 +206,7 @@ public class UserControllerTest {
         UserPutDTO userPutDTO = new UserPutDTO();
         userPutDTO.setUsername("newUsername");
         userPutDTO.setBirthday(new Date());
+        String token = "1";
 
         // Mock service to throw not found exception when user doesn't exist
         doThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "User with ID 1 was not found"))
@@ -205,7 +215,8 @@ public class UserControllerTest {
         // when/then -> do the request + validate the result
         MockHttpServletRequestBuilder putRequest = put("/users/1")
                 .contentType(MediaType.APPLICATION_JSON)
-                .header("CurrentUserId", "1") // Important: Add CurrentUserId header
+                .header("CurrentUserId", "1")
+                .header("Authorization", "Bearer " + token)// Important: Add CurrentUserId header
                 .content(asJsonString(userPutDTO));
 
         // then
@@ -303,7 +314,8 @@ public class UserControllerTest {
         public void logoutUser_successfulLogout() throws Exception {
         
         // Perform logout request
-        MockHttpServletRequestBuilder postRequest = post("/logout/1").contentType(MediaType.APPLICATION_JSON);
+        String token = "1";
+        MockHttpServletRequestBuilder postRequest = post("/logout/1").contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token);
         
         // Verify the response is No Content (204)
         mockMvc.perform(postRequest).andExpect(status().isNoContent());
