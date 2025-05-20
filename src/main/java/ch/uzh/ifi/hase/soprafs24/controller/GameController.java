@@ -71,6 +71,7 @@ public class GameController {
         //check Auth
         userService.isValidToken(token);
 
+
         // fetch all users in the internal representation
         Game game = gameService.getGame(gameId);
 
@@ -84,6 +85,7 @@ public class GameController {
     public List<WallGetDTO> getWalls(@PathVariable Long gameId,  @RequestHeader(value = "Authorization", required = true) String token) {
         //check Auth
         userService.isValidToken(token);
+
 
         // fetch all users in the internal representation
         List<Wall> listWalls = gameService.getWalls(gameId);
@@ -104,6 +106,7 @@ public class GameController {
         //check Auth
         userService.isValidToken(token);
         
+
         // fetch all users in the internal representation
         List<Pawn> listPawns = gameService.getPawns(gameId);
         List<PawnGetDTO> pawnGetDTOs = new ArrayList<>();
@@ -125,6 +128,7 @@ public class GameController {
     userService.isValidToken(token);
 
     // convert API user to internal representation
+
      User user = DTOMapper.INSTANCE.convertUserPostGETtoEntity(userGetDTO);
 
      Game game = gameService.createGame(user);
@@ -141,6 +145,7 @@ public class GameController {
         userService.isValidToken(token);
 
         // convert API user to internal representation
+
      User user = DTOMapper.INSTANCE.convertUserPostGETtoEntity(userGetDTO);
  
      gameService.joinGame(user, gameId);
@@ -154,6 +159,7 @@ public class GameController {
     public GameStatusDTO handleMove(@PathVariable Long gameId, @RequestBody MovePostDTO movePostDTO,  @RequestHeader(value = "Authorization", required = true) String token) {
         //check Auth
         userService.isValidToken(token);
+
 
     Move move =  DTOMapper.INSTANCE.convertMovePostDTOtoEntity(movePostDTO);
     Game game; 
@@ -200,6 +206,7 @@ public class GameController {
     public void delete(@PathVariable Long gameId, @RequestBody UserGetDTO userGetDTO,  @RequestHeader(value = "Authorization", required = true) String token) {
         //check Auth
         userService.isValidToken(token);
+
 
         User user = DTOMapper.INSTANCE.convertUserPostGETtoEntity(userGetDTO);
         try{
