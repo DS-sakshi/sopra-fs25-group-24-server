@@ -137,6 +137,9 @@ public class UserService {
             }
         }
 
+        user.setBirthday(userPutDTO.getBirthday());
+        user.setUsername(userPutDTO.getUsername());
+
         // Save updated user
         user = userRepository.save(user);
         userRepository.flush();
