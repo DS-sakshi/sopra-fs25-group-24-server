@@ -3,8 +3,7 @@
 An online multiplayer implementation of the classic board game Quoridor, built with Spring Boot. This server provides RESTful APIs and WebSocket connections for real-time gameplay.
 
 ## Table of Contents
-- [Overview](#overview)
-- [Features](#features)
+- [Introduction](#introduction)
 - [Technologies](#technologies)
 - [High-Level Components](#high-level-components)
 - [Project Structure](#project-structure)
@@ -20,7 +19,8 @@ An online multiplayer implementation of the classic board game Quoridor, built w
 
 ## Introduction 
 
-Quoridor Online is a digital adaptation of the classic board game Quoridor, designed to connect players across geographical distances. The game challenges players to strategically navigate their pawns to the opposite side of the board while placing walls to obstruct opponents. Our implementation offers a web-based platform where users can register, create profiles, and engage in turn-based gameplay with friends or other online players. 
+Quoridor Online is a digital adaptation of the classic board game Quoridor, designed to connect players across geographical distances. The game challenges players to strategically navigate their pawns to the opposite side of the board while placing walls to obstruct opponents. 
+Our implementation offers a web-based platform where users can register, create profiles, and engage in turn-based gameplay with friends or other online players. 
 
 The motivation behind this project was to create an accessible version of a beloved board game that preserves its strategic depth while adding digital enhancements like customizable board sizes, time limits, and an AI chatbot assistant to help new players learn the rules and strategies. 
 
@@ -35,7 +35,6 @@ The motivation behind this project was to create an accessible version of a belo
 - **ORM**: JPA/Hibernate - Object-relational mapping for database operations
 - **connection Client and Server**: REST endpoints with comprehensive error handling. WebSockets - For live game state synchronization
 - **Deployment**: Google Cloud: handling server deployment. Vercel: handling client deployment and hosting client
-- **External APIs**: WHICH ????
 
 
 ## High-Level Components
@@ -87,21 +86,33 @@ The motivation behind this project was to create an accessible version of a belo
    git clone [https://github.com/DS-sakshi/sopra-fs25-group-24-server]
    cd sopra-fs25-group-24-server
    ```
+   Inside the repository folder (with ls you can list files) there is a bash script setup.sh that will install everything you need, according to the system you are using.
+   Run the following command and follow the instructions
 
-2. **Build the project**
+      ```bash
+   source setup.sh
+   ```
+3. **Build the project**
+You can use the local Gradle Wrapper to build the application.
+macOS: ./gradlew
+Linux: ./gradlew
+Windows: ./gradlew.bat
+
    ```bash
    ./gradlew build
    ```
-2.5. **Build the project without tests**
+2.1. **Build the project without tests**
    ```bash
    ./gradlew build -x test
+   ```
+2.2. **Just Runt the tests**
+   ```bash
+    ./gradlew test
    ```
 3. **Run the application**
    ```bash
    ./gradlew bootRun
    ```
-how can we just run TESTS ??
-How can they do releases?
 4. **Verify the server is running**
    Visit `http://localhost:8080` in your browser
 
@@ -116,11 +127,13 @@ For development with automatic reloading:
 # Terminal 2: Run application
 ./gradlew bootRun
 ```
-
 To skip tests during development:
 ```bash
 ./gradlew build --continuous -xtest
 ```
+
+### Release
+A release is triggered with each push the the online repository. 
 
 ## API Documentation
 
