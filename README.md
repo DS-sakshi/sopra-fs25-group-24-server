@@ -20,7 +20,7 @@ The motivation behind this project was to create an accessible version of a belo
 
 ## Technologies
 
-- **Framework**: Spring Boot 2.7+ - For rapid, production-ready application development. For Frontend React framework Next.js
+- **Framework**: Spring Boot 2.7+ - For rapid, production-ready application development. 
 - **Language**: Java 17 - Latest LTS version with modern language features
 - **Database**: H2 (development) - Lightweight database
 - **Build Tool**: Gradle 7.0+ - Dependency management and build automation. Docker: used to simplify building, testing and deploying application
@@ -28,8 +28,7 @@ The motivation behind this project was to create an accessible version of a belo
 - **Authentication**: Token-based - Secure user session management
 - **ORM**: JPA/Hibernate - Object-relational mapping for database operations
 - **connection Client and Server**: REST endpoints with comprehensive error handling. WebSockets - For live game state synchronization
-- **Deployment**: Google Cloud: handling server deployment. Vercel: handling client deployment and hosting client
-
+- **Deployment**: Google Cloud: handling server deployment.
 
 ## High-Level Components
 
@@ -80,12 +79,7 @@ The motivation behind this project was to create an accessible version of a belo
    git clone [https://github.com/DS-sakshi/sopra-fs25-group-24-server]
    cd sopra-fs25-group-24-server
    ```
-   Inside the repository folder (with ls you can list files) there is a bash script setup.sh that will install everything you need, according to the system you are using.
-   Run the following command and follow the instructions
 
-   ```bash
-   source setup.sh
-   ```
 3. **Build the project**
 You can use the local Gradle Wrapper to build the application.
 macOS: ./gradlew
